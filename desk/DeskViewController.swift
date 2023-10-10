@@ -128,6 +128,10 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
         item.title = name
         item.representedObject = identifier
         deviceChoices.menu?.addItem(item)
+        if deviceChoices.menu?.items.count == 1 {
+            deviceChoices.select(item)
+            deskConnect.connect(id: identifier)
+        }
     }
     
     func deskConnected(name: String) {

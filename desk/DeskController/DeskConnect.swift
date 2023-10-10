@@ -8,10 +8,15 @@
 
 import Foundation
 import CoreBluetooth
-import RxSwift
-import RxRelay
 
-let deviceNamePattern = #"Desk[\s0-9].*"#;
+let deviceNamePattern = #"Desk[\s0-9].*"#
+
+protocol DeskConnectDelegate {
+    func deskDiscovered(name: String, identifier: UUID)
+    func deskConnected(name: String)
+    func deskPositionChanged(position: Double)
+}
+
 class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     private var centralManager: CBCentralManager!
     private var peripheral: CBPeripheral!
@@ -26,22 +31,43 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     private var moveToPositionValue: Double? = nil
     private var moveToPositionTimer: Timer?
     
-    let deviceName = BehaviorRelay<String>(value: "")
-    let currentPosition = BehaviorRelay<Double>(value: 0)
-    let dispose = DisposeBag()
+    private var discoveredDesks: [UUID: CBPeripheral] = [:]
+    
+    var delegate: DeskConnectDelegate?
+    
+    var currentPosition: Double? = nil {
+        didSet {
+            if let val = currentPosition {
+                self.delegate?.deskPositionChanged(position: val)
+            }
+        }
+    }
     
     let deskOffset = 62.5
     
     override init() {
         super.init()
-        centralManager = CBCentralManager(delegate: self, queue: nil)
+        centralManager = CBCentralManager(delegate: self, queue: .main)
+    }
+    
+    func connect(id: UUID) {
+        // TODO: Disconnect existing peripheral?
+        // TODO: Handle "connecting" state
+        if let peripheral = self.discoveredDesks[id] {
+            self.peripheral = peripheral
+            self.peripheral.delegate = self
+            self.centralManager.connect(peripheral)
+        } else {
+            print("Can't find connected desk with id \(id)")
+        }
     }
      
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if (central.state != .poweredOn) {
             print("Central is not powered on. Bluetooth disabled? @TODO")
         } else {
-            self.centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
+            // TODO: no idea why it doesn't work if I pass in services here
+            self.centralManager.scanForPeripherals(withServices: nil)
         }
     }
     
@@ -49,20 +75,11 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
      ON DISCOVER
      */
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        // @TODO
-        // DeviceName is just a test. let's do collection list with option to connect by user
-        let deviceName = (advertisementData as NSDictionary).object(forKey: CBAdvertisementDataLocalNameKey) as? NSString
-        let isDesk = deviceName?.range(of: deviceNamePattern, options:.regularExpression)
-        if (isDesk?.location != NSNotFound && deviceName != nil) {
-            self.centralManager.stopScan()
-            
-            if let dn = deviceName {
-                self.deviceName.accept(dn as String)
-            }
-            
-            self.peripheral = peripheral
-            self.peripheral.delegate = self
-            self.centralManager.connect(self.peripheral, options: nil)
+        if let deviceName = peripheral.name, (self.discoveredDesks[peripheral.identifier] == nil), (deviceName.range(of: deviceNamePattern, options:.regularExpression) != nil) {
+            print("Discovered \(deviceName) <\(peripheral.identifier)>")
+            self.discoveredDesks[peripheral.identifier] = peripheral
+            self.delegate?.deskDiscovered(name: deviceName, identifier: peripheral.identifier)
+            dump(self.discoveredDesks)
         }
     }
     
@@ -70,18 +87,19 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
      ON CONNECT
      */
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        print(peripheral)
-
-        self.peripheral.discoverServices(ParticlePeripheral.allServices)
+        print("Connected \(peripheral.name ?? "<unnamed>") <\(peripheral.identifier)>")
+        self.delegate?.deskConnected(name: peripheral.name!)
+        self.peripheral.discoverServices(DeskServices.all)
     }
     
     /**
      ON SERVICES
      */
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        print("Discovered services \(peripheral.name ?? "<unnamed>") <\(peripheral.identifier)>")
         if let services = peripheral.services {
             for service in services {
-                self.peripheral.discoverCharacteristics(ParticlePeripheral.allCharacteristics, for: service)
+                self.peripheral.discoverCharacteristics(DeskServices.characteristicsForService(id: service.uuid), for: service)
             }
         }
     }
@@ -94,13 +112,13 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
             for characteristic in characteristics {
                 self.peripheral.readValue(for: characteristic)
                 self.peripheral.setNotifyValue(true, for: characteristic)
-                
-                                
-                if (characteristic.uuid.uuidString == ParticlePeripheral.characteristicControl.uuidString) {
+
+         
+                if (characteristic.uuid == DeskServices.controlCharacteristic) {
                     self.characteristicControl = characteristic
                 }
-                
-                if (characteristic.uuid.uuidString == ParticlePeripheral.characteristicPosition.uuidString) {
+
+                if (characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition) {
                     self.characteristicPosition = characteristic
                     self.updatePosition(characteristic: characteristic)
                 }
@@ -110,10 +128,6 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         self.updatePosition(characteristic: characteristic)
-    }
-    
-    func turnOnContinous() {
-        
     }
     
     func moveUp() {
@@ -136,10 +150,9 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
                         
                         let formattedPosition = (round(Double(position) + (self.deskOffset * 100)) / 100)
                         let roundedPosition = round(formattedPosition / 0.5) * 0.5
-                        self.currentPosition.accept(roundedPosition)
-                                                
-                        let requiredPosition = self.moveToPositionValue ?? .nan
-                        if (requiredPosition != .nan) {
+                        self.currentPosition = roundedPosition
+
+                        if let requiredPosition = self.moveToPositionValue {
                             if (formattedPosition > (requiredPosition - 0.75) && formattedPosition < (requiredPosition + 0.75)) {
                                 self.moveToPositionTimer?.invalidate()
                                 self.moveToPositionValue = nil
@@ -155,15 +168,16 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     }
     
     @objc func stopMoving() {
-        self.peripheral.writeValue(Data(self.valueStopMove), for: self.characteristicControl, type: CBCharacteristicWriteType.withResponse)
+//        self.peripheral.writeValue(Data(self.valueStopMove), for: self.characteristicControl, type: CBCharacteristicWriteType.withResponse)
+        moveToPositionTimer?.invalidate()
+        moveToPositionTimer = nil
     }
-    
+
     func moveToPosition(position: Double) {
         self.moveToPositionValue = position
         self.handleMoveToPosition()
         
         self.moveToPositionTimer = Timer.scheduledTimer(withTimeInterval: 0.7, repeats: true) { (Timer) in
-            print("moving", self.currentPosition.value)
             if (self.moveToPositionValue == nil) {
                 Timer.invalidate()
             } else {
@@ -171,13 +185,18 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
             }
         }
     }
-    
+
+    public func isMoving() -> Bool {
+        return self.moveToPositionTimer?.isValid ?? false
+    }
+
     private func handleMoveToPosition() {
-        let positionRequired = self.moveToPositionValue ?? .nan
-        if (positionRequired < self.currentPosition.value) {
-            self.moveDown()
-        } else if (positionRequired > self.currentPosition.value) {
-            self.moveUp()
+        if let positionRequired = self.moveToPositionValue, let currentPosition = self.currentPosition {
+            if positionRequired < currentPosition {
+                self.moveDown()
+            } else if (positionRequired > currentPosition) {
+                self.moveUp()
+            }
         }
     }
 }

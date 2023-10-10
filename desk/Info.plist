@@ -36,5 +36,7 @@
 	<true/>
 	<key>NSSupportsSuddenTermination</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>The app maintains a connection to the Ikea stand-up desk.</string>
 </dict>
 </plist>

@@ -8,61 +8,53 @@
 
 import Cocoa
 
-class DeskViewController: NSViewController {
+class DeskViewController: NSViewController, DeskConnectDelegate {
     private var deskConnect: DeskConnect!
     private var longClick: NSPressGestureRecognizer?
     private var userDefaults: UserDefaults?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.deskConnect = DeskConnect()
+        deskConnect = DeskConnect()
+        deskConnect.delegate = self
         
-        self.buttonUp.isEnabled = false
-        self.buttonDown.isEnabled = false
+        buttonUp.isEnabled = false
+        buttonDown.isEnabled = false
         
-        self.deskConnect.currentPosition.asObservable().subscribe({ value in
-            if let position = value.element {
-                if (position > 0) {
-                    self.currentValue.stringValue = String(format:"%.1f", position)
-                    self.currentPosition = position
-                }
-            }
-            
-        }).disposed(by: self.deskConnect.dispose)
+        userDefaults = UserDefaults.init(suiteName: "positions")
+        let sitPosition = userDefaults!.double(forKey: "sit-position")
+        if sitPosition > 0 {
+            self.sitPosition.stringValue = String(format:"%.1f", sitPosition)
+        }
+        let standPosition = userDefaults!.double(forKey: "stand-position")
+        if standPosition > 0 {
+            self.standPosition.stringValue = String(format:"%.1f", standPosition)
+        }
+
+        buttonUp.sendAction(on: .leftMouseDown)
+        buttonUp.isContinuous = true
+        buttonUp.setPeriodicDelay(0, interval: 0.7)
         
-        self.deskConnect.deviceName.asObservable().subscribe({ value in
-            self.deskName.stringValue = "\(value.element ?? "Unknown desk")"
-            self.buttonUp.isEnabled = true
-            self.buttonDown.isEnabled = true
-        }).disposed(by: self.deskConnect.dispose)
-        
-        self.userDefaults = UserDefaults.init(suiteName: "positions")
-        self.initSavedPositions()
-        
-        self.buttonUp.sendAction(on: .leftMouseDown)
-        self.buttonUp.isContinuous = true
-        self.buttonUp.setPeriodicDelay(0, interval: 0.7)
-        
-        self.buttonDown.sendAction(on: .leftMouseDown)
-        self.buttonDown.isContinuous = true
-        self.buttonDown.setPeriodicDelay(0, interval: 0.7)
+        buttonDown.sendAction(on: .leftMouseDown)
+        buttonDown.isContinuous = true
+        buttonDown.setPeriodicDelay(0, interval: 0.7)
     }
-    
-    
-    var currentPosition: Double!
+
+    @IBOutlet var deskStatus: NSTextField!
+    @IBOutlet var deviceChoices: NSPopUpButton!
     @IBOutlet var currentValue: NSTextField!
-    @IBOutlet var deskName: NSTextField!
     @IBOutlet var buttonUp: NSButton!
     @IBOutlet var buttonDown: NSButton!
-    
     @IBOutlet var buttonMoveToSit: NSButton!
     @IBOutlet var buttonMoveToStand: NSButton!
-    
     @IBOutlet var sitPosition: NSTextField!
     @IBOutlet var standPosition: NSTextField!
     
-    var isMovingToPositionValue = false
-    var moveToPositionValue = 70.0
+    var currentPosition: Double! {
+        didSet {
+            self.currentValue.stringValue = String(format:"%.1f", currentPosition)
+        }
+    }
     
     var isWaitingForSecondPress = false
     @objc func stopMoving() {
@@ -78,10 +70,19 @@ class DeskViewController: NSViewController {
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(clearIsWairingForSecondPress), object: nil)
         
         if (self.isWaitingForSecondPress == false) {
-            perform(#selector(stopMoving), with: nil, afterDelay: 0.18)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18, execute: { [weak self] in
+                self?.deskConnect.stopMoving()
+            })
+//            perform(#selector(stopMoving), with: nil, afterDelay: 0.18)
         }
         
         perform(#selector(clearIsWairingForSecondPress), with: nil, afterDelay: 0.2)
+    }
+    
+    @IBAction func selectedDesk(_ sender: NSPopUpButton) {
+        if let obj = sender.selectedItem?.representedObject as? UUID {
+            deskConnect.connect(id: obj)
+        }
     }
     
     @IBAction func up(_ sender: NSButton) {
@@ -95,54 +96,57 @@ class DeskViewController: NSViewController {
     }
     
     @IBAction func saveAsSitPosition(_ sender: NSButton) {
-        self.userDefaults?.set(self.currentPosition, forKey: "sit-position")
+        self.userDefaults!.set(self.currentPosition, forKey: "sit-position")
         self.sitPosition.stringValue = String(format:"%.1f", self.currentPosition)
     }
     
     @IBAction func saveAsStandPosition(_ sender: NSButton) {
-        self.userDefaults?.set(self.currentPosition, forKey: "stand-position")
+        self.userDefaults!.set(self.currentPosition, forKey: "stand-position")
         self.standPosition.stringValue = String(format:"%.1f", self.currentPosition)
     }
     
     @IBAction func moveToSitPosition(_ sender: NSButton) {
-        let position = self.userDefaults?.double(forKey: "sit-position") ?? .nan
-        if (position != .nan) {
+        if let position = self.userDefaults?.double(forKey: "sit-position") {
             self.deskConnect.moveToPosition(position: position)
         }
     }
     
     @IBAction func moveToStandPosition(_ sender: NSButton) {
-        let position = self.userDefaults?.double(forKey: "stand-position") ?? .nan
-        if (position != .nan) {
+        if let position = self.userDefaults?.double(forKey: "stand-position") {
             self.deskConnect.moveToPosition(position: position)
         }
     }
+
+    @IBAction func stopMoving(_ sender: NSButton) {
+        deskConnect.stopMoving()
+    }
+
+    // MARK: DeskConnectDelegate
     
-    @IBAction func stop(_ sender: NSButton) {
-        self.deskConnect.stopMoving()
+    func deskDiscovered(name: String, identifier: UUID) {
+        let item = NSMenuItem()
+        item.title = name
+        item.representedObject = identifier
+        deviceChoices.menu?.addItem(item)
     }
     
-    private func initSavedPositions() {
-        if let sitPosition = self.userDefaults?.double(forKey: "sit-position") {
-            self.sitPosition.stringValue = String(format:"%.1f", sitPosition)
-        }
-        
-        if let standPosition = self.userDefaults?.double(forKey: "stand-position") {
-            self.standPosition.stringValue = String(format:"%.1f", standPosition)
-        }
+    func deskConnected(name: String) {
+        self.buttonUp.isEnabled = true
+        self.buttonDown.isEnabled = true
+        // TODO: Save last connected desk
+    }
+    
+    func deskPositionChanged(position: Double) {
+        self.currentPosition = position
     }
 }
 
 extension DeskViewController {
     // MARK: Storyboard instantiation
     static func freshController() -> DeskViewController {
-        //1.
-        let storyboard = NSStoryboard(name: NSStoryboard.Name("Main"), bundle: nil)
-        //2.
-        let identifier = NSStoryboard.SceneIdentifier("DeskViewController")
-        //3.
-        guard let viewcontroller = storyboard.instantiateController(withIdentifier: identifier) as? DeskViewController else {
-            fatalError("Why cant i find QuotesViewController? - Check Main.storyboard")
+        let storyboard = NSStoryboard(name: "Main", bundle: nil)
+        guard let viewcontroller = storyboard.instantiateController(withIdentifier: "DeskViewController") as? DeskViewController else {
+            fatalError("Can't find DeskViewController - Check Main.storyboard")
         }
         return viewcontroller
     }

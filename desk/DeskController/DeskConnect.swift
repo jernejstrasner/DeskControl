@@ -69,7 +69,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
         if (central.state != .poweredOn) {
             print("Central is not powered on. Bluetooth disabled? @TODO")
         } else {
-            // TODO: no idea why it doesn't work if I pass in services here
+            // TODO: no idea why it doesn't work if I pass in services here (maybe check delegate methods?)
             self.centralManager.scanForPeripherals(withServices: nil)
         }
     }
@@ -160,6 +160,10 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
         moveTimer = nil
         status = .idle
         self.peripheral?.writeValue(DeskServices.valueStopMove, for: self.characteristicControl, type: .withResponse)
+    }
+    
+    func wakeUp() {
+        self.peripheral?.writeValue(DeskServices.valueWakeUp, for: self.characteristicControl, type: .withResponse)
     }
     
     /**

@@ -43,6 +43,12 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
         }
     }
     
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        
+        deskConnect.wakeUp()
+    }
+    
     @IBOutlet var deskStatus: NSTextField!
     @IBOutlet var deviceChoices: NSPopUpButton!
     @IBOutlet var currentValue: NSTextField!

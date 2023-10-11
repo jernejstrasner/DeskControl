@@ -19,7 +19,6 @@ public struct DeskServices {
     
     static public let valueMoveUp = pack("<H", [71, 0])
     static public let valueMoveDown = pack("<H", [70, 0])
-    // TODO: When app is displayed issue wake-up command to desk
     static public let valueWakeUp = pack("<H", [254, 0])
     static public let valueStopMove = pack("<H", [255, 0])
     

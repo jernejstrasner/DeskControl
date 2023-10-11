@@ -10,7 +10,6 @@ import Cocoa
 
 class DeskViewController: NSViewController, DeskConnectDelegate {
     private var deskConnect: DeskConnect!
-    private var longClick: NSPressGestureRecognizer?
     private var userDefaults: UserDefaults?
     
     override func viewDidLoad() {
@@ -22,24 +21,18 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
         buttonDown.isEnabled = false
         
         userDefaults = UserDefaults.init(suiteName: "positions")
-        let sitPosition = userDefaults!.double(forKey: "sit-position")
-        if sitPosition > 0 {
-            self.sitPosition.stringValue = String(format:"%.1f", sitPosition)
-        }
-        let standPosition = userDefaults!.double(forKey: "stand-position")
-        if standPosition > 0 {
-            self.standPosition.stringValue = String(format:"%.1f", standPosition)
-        }
+        sitPositionValue = userDefaults!.integer(forKey: "sit-position")
+        standPositionValue = userDefaults!.integer(forKey: "stand-position")
 
-        buttonUp.sendAction(on: .leftMouseDown)
+        buttonUp.sendAction(on: [.leftMouseDown, .leftMouseUp])
         buttonUp.isContinuous = true
         buttonUp.setPeriodicDelay(0, interval: 0.7)
         
-        buttonDown.sendAction(on: .leftMouseDown)
+        buttonDown.sendAction(on: [.leftMouseDown, .leftMouseUp])
         buttonDown.isContinuous = true
         buttonDown.setPeriodicDelay(0, interval: 0.7)
     }
-
+    
     @IBOutlet var deskStatus: NSTextField!
     @IBOutlet var deviceChoices: NSPopUpButton!
     @IBOutlet var currentValue: NSTextField!
@@ -50,33 +43,22 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
     @IBOutlet var sitPosition: NSTextField!
     @IBOutlet var standPosition: NSTextField!
     
-    var currentPosition: Double! {
+    var currentPosition: Int! {
         didSet {
-            self.currentValue.stringValue = String(format:"%.1f", currentPosition)
+            self.currentValue.stringValue = String(format:"%.1f", Double(currentPosition)/100)
         }
     }
     
-    var isWaitingForSecondPress = false
-    @objc func stopMoving() {
-        self.deskConnect.stopMoving()
-        self.isWaitingForSecondPress = true
-    }
-    
-    @objc func clearIsWairingForSecondPress() {
-        self.isWaitingForSecondPress = false
-    }
-    
-    func handleStopMovingIfSingleClick() {
-        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(clearIsWairingForSecondPress), object: nil)
-        
-        if (self.isWaitingForSecondPress == false) {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18, execute: { [weak self] in
-                self?.deskConnect.stopMoving()
-            })
-//            perform(#selector(stopMoving), with: nil, afterDelay: 0.18)
+    var sitPositionValue: Int? {
+        didSet {
+            self.sitPosition.stringValue = String(format:"%.1f", Double(sitPositionValue ?? 0)/100)
         }
-        
-        perform(#selector(clearIsWairingForSecondPress), with: nil, afterDelay: 0.2)
+    }
+    
+    var standPositionValue: Int? {
+        didSet {
+            self.standPosition.stringValue = String(format:"%.1f", Double(standPositionValue ?? 0)/100)
+        }
     }
     
     @IBAction func selectedDesk(_ sender: NSPopUpButton) {
@@ -86,33 +68,43 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
     }
     
     @IBAction func up(_ sender: NSButton) {
-        self.deskConnect.moveUp()
-        self.handleStopMovingIfSingleClick()
+        if let event = NSApp.currentEvent {
+            if event.type == .leftMouseDown || event.type == .periodic {
+                deskConnect.moveUp()
+            } else if event.type == .leftMouseUp {
+                deskConnect.stopMoving()
+            }
+        }
     }
     
     @IBAction func down(_ sender: NSButton) {
-        self.deskConnect.moveDown()
-        self.handleStopMovingIfSingleClick()
+        if let event = NSApp.currentEvent {
+            if event.type == .leftMouseDown || event.type == .periodic {
+                deskConnect.moveDown()
+            } else if event.type == .leftMouseUp {
+                deskConnect.stopMoving()
+            }
+        }
     }
     
     @IBAction func saveAsSitPosition(_ sender: NSButton) {
         self.userDefaults!.set(self.currentPosition, forKey: "sit-position")
-        self.sitPosition.stringValue = String(format:"%.1f", self.currentPosition)
+        self.sitPositionValue = self.currentPosition
     }
     
     @IBAction func saveAsStandPosition(_ sender: NSButton) {
         self.userDefaults!.set(self.currentPosition, forKey: "stand-position")
-        self.standPosition.stringValue = String(format:"%.1f", self.currentPosition)
+        self.standPositionValue = self.currentPosition
     }
     
     @IBAction func moveToSitPosition(_ sender: NSButton) {
-        if let position = self.userDefaults?.double(forKey: "sit-position") {
+        if let position = self.userDefaults?.integer(forKey: "sit-position") {
             self.deskConnect.moveToPosition(position: position)
         }
     }
     
     @IBAction func moveToStandPosition(_ sender: NSButton) {
-        if let position = self.userDefaults?.double(forKey: "stand-position") {
+        if let position = self.userDefaults?.integer(forKey: "stand-position") {
             self.deskConnect.moveToPosition(position: position)
         }
     }
@@ -140,7 +132,7 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
         // TODO: Save last connected desk
     }
     
-    func deskPositionChanged(position: Double) {
+    func deskPositionChanged(position: Int) {
         self.currentPosition = position
     }
 }

@@ -14,7 +14,7 @@ let deviceNamePattern = #"Desk[\s0-9].*"#
 protocol DeskConnectDelegate {
     func deskDiscovered(name: String, identifier: UUID)
     func deskConnected(name: String)
-    func deskPositionChanged(position: Double)
+    func deskPositionChanged(position: Int)
 }
 
 class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
@@ -23,27 +23,28 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     
     private var characteristicPosition: CBCharacteristic!
     private var characteristicControl: CBCharacteristic!
+    private var characteristicMove: CBCharacteristic!
     
-    private var valueMoveUp = pack("<H", [71, 0])
-    private var valueMoveDown = pack("<H", [70, 0])
-    private var valueStopMove = pack("<H", [255, 0])
+    private var moveTimer: DispatchSourceTimer? = nil
     
-    private var moveToPositionValue: Double? = nil
-    private var moveToPositionTimer: Timer?
+    private enum Status {
+        case idle
+        case movingUp(Int)
+        case movingDown(Int)
+    }
+    private var status = Status.idle
     
     private var discoveredDesks: [UUID: CBPeripheral] = [:]
     
     var delegate: DeskConnectDelegate?
     
-    var currentPosition: Double? = nil {
+    var currentPosition: Int? = nil {
         didSet {
             if let val = currentPosition {
                 self.delegate?.deskPositionChanged(position: val)
             }
         }
     }
-    
-    let deskOffset = 62.5
     
     override init() {
         super.init()
@@ -76,10 +77,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
      */
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         if let deviceName = peripheral.name, (self.discoveredDesks[peripheral.identifier] == nil), (deviceName.range(of: deviceNamePattern, options:.regularExpression) != nil) {
-            print("Discovered \(deviceName) <\(peripheral.identifier)>")
             self.discoveredDesks[peripheral.identifier] = peripheral
             self.delegate?.deskDiscovered(name: deviceName, identifier: peripheral.identifier)
-            dump(self.discoveredDesks)
         }
     }
     
@@ -87,7 +86,6 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
      ON CONNECT
      */
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        print("Connected \(peripheral.name ?? "<unnamed>") <\(peripheral.identifier)>")
         self.delegate?.deskConnected(name: peripheral.name!)
         self.peripheral.discoverServices(DeskServices.all)
     }
@@ -96,7 +94,6 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
      ON SERVICES
      */
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        print("Discovered services \(peripheral.name ?? "<unnamed>") <\(peripheral.identifier)>")
         if let services = peripheral.services {
             for service in services {
                 self.peripheral.discoverCharacteristics(DeskServices.characteristicsForService(id: service.uuid), for: service)
@@ -112,91 +109,87 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
             for characteristic in characteristics {
                 self.peripheral.readValue(for: characteristic)
                 self.peripheral.setNotifyValue(true, for: characteristic)
-
          
                 if (characteristic.uuid == DeskServices.controlCharacteristic) {
+                    dump(characteristic)
                     self.characteristicControl = characteristic
                 }
 
                 if (characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition) {
+                    dump(characteristic)
                     self.characteristicPosition = characteristic
-                    self.updatePosition(characteristic: characteristic)
+                }
+                
+                if characteristic.uuid == DeskServices.referenceInputCharacteristicMove {
+                    dump(characteristic)
+                    self.characteristicMove = characteristic
                 }
             }
         }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        self.updatePosition(characteristic: characteristic)
+        if let value = characteristic.value, characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition {
+            do {
+                let unpacked = try unpack("<H", value[..<2])
+                let position = unpacked[0] as! Int
+                currentPosition = DeskServices.baseHeight + position
+                
+                // If we're moving to target then check if we need to stop here
+                if case .movingUp(let target) = status, currentPosition! >= target {
+                    stopMoving()
+                }
+                if case .movingDown(let target) = status, currentPosition! <= target {
+                    stopMoving()
+                }
+            } catch let e {
+                print("Error unpacking position: \(e)")
+            }
+        }
     }
     
     func moveUp() {
-        print("up")
-        self.peripheral.writeValue(Data(self.valueMoveUp), for: self.characteristicControl, type: CBCharacteristicWriteType.withResponse)
+        self.peripheral.writeValue(DeskServices.valueMoveUp, for: self.characteristicControl, type: .withResponse)
     }
     
     func moveDown() {
-        print("down")
-        self.peripheral.writeValue(Data(self.valueMoveDown), for: self.characteristicControl, type: CBCharacteristicWriteType.withResponse)
+        self.peripheral.writeValue(DeskServices.valueMoveDown, for: self.characteristicControl, type: .withResponse)
     }
     
-    private func updatePosition(characteristic: CBCharacteristic) {
-        if (characteristic.value != nil && characteristic.uuid.uuidString == self.characteristicPosition.uuid.uuidString) {
-            let byteArray = [UInt8](characteristic.value!)
-            if (byteArray.indices.contains(0) && byteArray.indices.contains(1)) {
-                do {
-                    let positionWrapped = try unpack("<H", Data([byteArray[0], byteArray[1]]))
-                    if let position = positionWrapped[0] as? Int {
-                        
-                        let formattedPosition = (round(Double(position) + (self.deskOffset * 100)) / 100)
-                        let roundedPosition = round(formattedPosition / 0.5) * 0.5
-                        self.currentPosition = roundedPosition
-
-                        if let requiredPosition = self.moveToPositionValue {
-                            if (formattedPosition > (requiredPosition - 0.75) && formattedPosition < (requiredPosition + 0.75)) {
-                                self.moveToPositionTimer?.invalidate()
-                                self.moveToPositionValue = nil
-                                self.stopMoving()
-                            }
-                        }
-                    }
-                } catch let error as NSError {
-                    print("Error, update position: \(error)")
-                }
-            }
+    func stopMoving() {
+        moveTimer?.cancel()
+        moveTimer = nil
+        status = .idle
+        self.peripheral.writeValue(DeskServices.valueStopMove, for: self.characteristicControl, type: .withResponse)
+    }
+    
+    /**
+     Moving to a specific position requires to send command to the desk in a loop.
+     The desk controller does not have direct support for moving to a specific position continously.
+     */
+    // TODO: Reduce overshooting
+    func moveToPosition(position: Int) {
+        // If we don't have a current position yet, we are trying to move to same position or movement is active then return early
+        guard let currentPosition = self.currentPosition, currentPosition != position, moveTimer == nil else {
+            return
         }
-    }
-    
-    @objc func stopMoving() {
-//        self.peripheral.writeValue(Data(self.valueStopMove), for: self.characteristicControl, type: CBCharacteristicWriteType.withResponse)
-        moveToPositionTimer?.invalidate()
-        moveToPositionTimer = nil
-    }
-
-    func moveToPosition(position: Double) {
-        self.moveToPositionValue = position
-        self.handleMoveToPosition()
         
-        self.moveToPositionTimer = Timer.scheduledTimer(withTimeInterval: 0.7, repeats: true) { (Timer) in
-            if (self.moveToPositionValue == nil) {
-                Timer.invalidate()
-            } else {
-                self.handleMoveToPosition()
-            }
+        // Determine direction
+        let goingUp = position > currentPosition
+        
+        // Create timer to call move commands in intervals for continuous movement
+        moveTimer = DispatchSource.makeTimerSource(queue: .main)
+        moveTimer!.setEventHandler {
+            self.peripheral.writeValue(goingUp ? DeskServices.valueMoveUp : DeskServices.valueMoveDown, for: self.characteristicControl, type: .withResponse)
         }
-    }
-
-    public func isMoving() -> Bool {
-        return self.moveToPositionTimer?.isValid ?? false
-    }
-
-    private func handleMoveToPosition() {
-        if let positionRequired = self.moveToPositionValue, let currentPosition = self.currentPosition {
-            if positionRequired < currentPosition {
-                self.moveDown()
-            } else if (positionRequired > currentPosition) {
-                self.moveUp()
-            }
+        moveTimer!.schedule(deadline: .now(), repeating: .milliseconds(700))
+        moveTimer?.resume()
+        
+        // Set status so other methods know what's happening
+        if goingUp {
+            status = .movingUp(position)
+        } else {
+            status = .movingDown(position)
         }
     }
 }

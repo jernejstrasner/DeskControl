@@ -13,6 +13,16 @@ public struct DeskServices {
     static public let referenceInput = CBUUID(string: "99FA0030-338A-1024-8A49-009C0215F78A")
     static public let referenceInputCharacteristicMove = CBUUID(string: "99FA0031-338A-1024-8A49-009C0215F78A")
     
+    // TODO: Verify these numbers by measuring the desk
+    static public let baseHeight = 6000 // 1/10th mm
+    static public let maxRange = 6500 // 1/10th mm
+    
+    static public let valueMoveUp = pack("<H", [71, 0])
+    static public let valueMoveDown = pack("<H", [70, 0])
+    // TODO: When app is displayed issue wake-up command to desk
+    static public let valueWakeUp = pack("<H", [254, 0])
+    static public let valueStopMove = pack("<H", [255, 0])
+    
     static let all: [CBUUID] = [
         Self.control,
         Self.dpg,
@@ -35,7 +45,67 @@ public struct DeskServices {
         }
     }
     
+    enum Command {
+        case moveUp(Int)
+        case moveDown(Int)
+        case stopMoving
+        case wakeUp
+        case readPosition
+        
+        var data: Data {
+            switch self {
+            case .moveUp(let speed):
+                return Data([70, UInt8(speed)])
+            case .moveDown(let speed):
+                return Data([71, UInt8(speed)])
+            case .wakeUp:
+                return Data([254])
+            case .stopMoving:
+                return Data([255])
+            default:
+                return Data([0])
+            }
+        }
+        
+        var characteristic: CBUUID {
+            switch self {
+            case .moveUp, .moveDown, .stopMoving:
+                return DeskServices.referenceInputCharacteristicMove
+            case .readPosition:
+                return DeskServices.referenceOutputCharacteristicPosition
+            default:
+                fatalError()
+            }
+        }
+    }
+}
+
+class Desk: NSObject, CBPeripheralDelegate {
+    let peripheral: CBPeripheral
     
+    // TODO: Verify the services and characteristics are correct
+    
+    init(peripheral: CBPeripheral) {
+        self.peripheral = peripheral
+        super.init()
+        peripheral.delegate = self
+        // Read the position immediately and set to notify of changes
+        // TODO: Somehow get or build a characteristic here
+//        peripheral.readValue(for: <#T##CBCharacteristic#>)
+//        peripheral.setNotifyValue(true, for: <#T##CBCharacteristic#>)
+    }
+
+    // This gets updated by the peripheral delegate
+    private(set) var position: Double?
+    
+    // MARK: - CBPeripheralDelegate
+    
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        if characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition, let value = characteristic.value {
+            let position = Double(value[0])
+            self.position = position
+        }
+    }
 }
 
 //struct ParticlePeripheral {

@@ -31,6 +31,16 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
         buttonDown.sendAction(on: [.leftMouseDown, .leftMouseUp])
         buttonDown.isContinuous = true
         buttonDown.setPeriodicDelay(0, interval: 0.7)
+        
+        // Get the last connected desk and create a disable menu item
+        if let lastDesk = userDefaults!.string(forKey: "desk-id"), let identifier = UUID(uuidString: lastDesk), let deskName = userDefaults!.string(forKey: "desk-name") {
+            let item = NSMenuItem()
+            item.tag = identifier.hashValue
+            item.title = deskName
+            item.representedObject = identifier
+            item.isEnabled = false
+            deviceChoices.menu?.addItem(item)
+        }
     }
     
     @IBOutlet var deskStatus: NSTextField!
@@ -64,6 +74,8 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
     @IBAction func selectedDesk(_ sender: NSPopUpButton) {
         if let obj = sender.selectedItem?.representedObject as? UUID {
             deskConnect.connect(id: obj)
+            userDefaults!.set(obj.uuidString, forKey: "desk-id")
+            userDefaults!.set(sender.selectedItem?.title, forKey: "desk-name")
         }
     }
     
@@ -116,11 +128,20 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
     // MARK: DeskConnectDelegate
     
     func deskDiscovered(name: String, identifier: UUID) {
-        let item = NSMenuItem()
-        item.title = name
-        item.representedObject = identifier
-        deviceChoices.menu?.addItem(item)
-        if deviceChoices.menu?.items.count == 1 {
+        // Check if desk is already there from being saved and update
+        if let item = deviceChoices.menu!.item(withTag: identifier.hashValue) {
+            item.title = name
+            item.representedObject = identifier
+            item.isEnabled = true
+        } else {
+            let item = NSMenuItem()
+            item.tag = identifier.hashValue
+            item.title = name
+            item.representedObject = identifier
+            deviceChoices.menu!.addItem(item)
+        }
+        // If there's only one desk total then connect to it
+        if deviceChoices.menu!.items.count == 1, let item = deviceChoices.menu!.items.first {
             deviceChoices.select(item)
             deskConnect.connect(id: identifier)
         }
@@ -129,7 +150,6 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
     func deskConnected(name: String) {
         self.buttonUp.isEnabled = true
         self.buttonDown.isEnabled = true
-        // TODO: Save last connected desk
     }
     
     func deskPositionChanged(position: Int) {

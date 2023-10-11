@@ -73,6 +73,7 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
     
     @IBAction func selectedDesk(_ sender: NSPopUpButton) {
         if let obj = sender.selectedItem?.representedObject as? UUID {
+            deskStatus.stringValue = "Connecting..."
             deskConnect.connect(id: obj)
             userDefaults!.set(obj.uuidString, forKey: "desk-id")
             userDefaults!.set(sender.selectedItem?.title, forKey: "desk-name")
@@ -143,17 +144,27 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
         // If there's only one desk total then connect to it
         if deviceChoices.menu!.items.count == 1, let item = deviceChoices.menu!.items.first {
             deviceChoices.select(item)
+            deskStatus.stringValue = "Connecting..."
             deskConnect.connect(id: identifier)
         }
     }
     
-    func deskConnected(name: String) {
-        self.buttonUp.isEnabled = true
-        self.buttonDown.isEnabled = true
+    func deskConnected(name: String, identifier: UUID) {
+        buttonUp.isEnabled = true
+        buttonDown.isEnabled = true
+        deskStatus.stringValue = "Connected"
+    }
+    
+    func deskDisconnected(name: String, identifier: UUID) {
+        buttonUp.isEnabled = false
+        buttonUp.isEnabled = false
+        if deviceChoices.selectedItem?.tag == identifier.hashValue {
+            deskStatus.stringValue = "Disconnected"
+        }
     }
     
     func deskPositionChanged(position: Int) {
-        self.currentPosition = position
+        currentPosition = position
     }
 }
 

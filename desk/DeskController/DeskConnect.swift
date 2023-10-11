@@ -13,17 +13,17 @@ let deviceNamePattern = #"Desk[\s0-9].*"#
 
 protocol DeskConnectDelegate {
     func deskDiscovered(name: String, identifier: UUID)
-    func deskConnected(name: String)
+    func deskConnected(name: String, identifier: UUID)
+    func deskDisconnected(name: String, identifier: UUID)
     func deskPositionChanged(position: Int)
 }
 
 class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     private var centralManager: CBCentralManager!
-    private var peripheral: CBPeripheral!
+    private var peripheral: CBPeripheral?
     
     private var characteristicPosition: CBCharacteristic!
     private var characteristicControl: CBCharacteristic!
-    private var characteristicMove: CBCharacteristic!
     
     private var moveTimer: DispatchSourceTimer? = nil
     
@@ -52,11 +52,13 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     }
     
     func connect(id: UUID) {
-        // TODO: Disconnect existing peripheral?
-        // TODO: Handle "connecting" state
+        if let peripheral = self.peripheral {
+            centralManager.cancelPeripheralConnection(peripheral)
+            self.peripheral = nil
+        }
         if let peripheral = self.discoveredDesks[id] {
             self.peripheral = peripheral
-            self.peripheral.delegate = self
+            self.peripheral!.delegate = self
             self.centralManager.connect(peripheral)
         } else {
             print("Can't find connected desk with id \(id)")
@@ -86,8 +88,12 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
      ON CONNECT
      */
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        self.delegate?.deskConnected(name: peripheral.name!)
-        self.peripheral.discoverServices(DeskServices.all)
+        self.delegate?.deskConnected(name: peripheral.name!, identifier: peripheral.identifier)
+        peripheral.discoverServices(DeskServices.all)
+    }
+    
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        self.delegate?.deskDisconnected(name: peripheral.name!, identifier: peripheral.identifier)
     }
     
     /**
@@ -96,7 +102,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let services = peripheral.services {
             for service in services {
-                self.peripheral.discoverCharacteristics(DeskServices.characteristicsForService(id: service.uuid), for: service)
+                peripheral.discoverCharacteristics(DeskServices.characteristicsForService(id: service.uuid), for: service)
             }
         }
     }
@@ -107,22 +113,15 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
-                self.peripheral.readValue(for: characteristic)
-                self.peripheral.setNotifyValue(true, for: characteristic)
+                peripheral.readValue(for: characteristic)
+                peripheral.setNotifyValue(true, for: characteristic)
          
                 if (characteristic.uuid == DeskServices.controlCharacteristic) {
-                    dump(characteristic)
                     self.characteristicControl = characteristic
                 }
 
                 if (characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition) {
-                    dump(characteristic)
                     self.characteristicPosition = characteristic
-                }
-                
-                if characteristic.uuid == DeskServices.referenceInputCharacteristicMove {
-                    dump(characteristic)
-                    self.characteristicMove = characteristic
                 }
             }
         }
@@ -149,18 +148,18 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     }
     
     func moveUp() {
-        self.peripheral.writeValue(DeskServices.valueMoveUp, for: self.characteristicControl, type: .withResponse)
+        self.peripheral?.writeValue(DeskServices.valueMoveUp, for: self.characteristicControl, type: .withResponse)
     }
     
     func moveDown() {
-        self.peripheral.writeValue(DeskServices.valueMoveDown, for: self.characteristicControl, type: .withResponse)
+        self.peripheral?.writeValue(DeskServices.valueMoveDown, for: self.characteristicControl, type: .withResponse)
     }
     
     func stopMoving() {
         moveTimer?.cancel()
         moveTimer = nil
         status = .idle
-        self.peripheral.writeValue(DeskServices.valueStopMove, for: self.characteristicControl, type: .withResponse)
+        self.peripheral?.writeValue(DeskServices.valueStopMove, for: self.characteristicControl, type: .withResponse)
     }
     
     /**
@@ -180,7 +179,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
         // Create timer to call move commands in intervals for continuous movement
         moveTimer = DispatchSource.makeTimerSource(queue: .main)
         moveTimer!.setEventHandler {
-            self.peripheral.writeValue(goingUp ? DeskServices.valueMoveUp : DeskServices.valueMoveDown, for: self.characteristicControl, type: .withResponse)
+            self.peripheral?.writeValue(goingUp ? DeskServices.valueMoveUp : DeskServices.valueMoveDown, for: self.characteristicControl, type: .withResponse)
         }
         moveTimer!.schedule(deadline: .now(), repeating: .milliseconds(700))
         moveTimer?.resume()

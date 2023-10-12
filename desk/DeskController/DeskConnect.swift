@@ -45,6 +45,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
             }
         }
     }
+    var currentSpeed: Int = 0
     
     override init() {
         super.init()
@@ -130,15 +131,20 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if let value = characteristic.value, characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition {
             do {
-                let unpacked = try unpack("<H", value[..<2])
+                let unpacked = try unpack("<Hh", value[..<4])
+
                 let position = unpacked[0] as! Int
                 currentPosition = DeskServices.baseHeight + position
                 
+                let speed = unpacked[1] as! Int
+                currentSpeed = speed
+                
                 // If we're moving to target then check if we need to stop here
-                if case .movingUp(let target) = status, currentPosition! >= target {
+                // Take speed into account so we don't overshoot
+                let stopFactor = abs(currentSpeed) / 100
+                if case .movingUp(let target) = status, currentPosition! >= target - stopFactor {
                     stopMoving()
-                }
-                if case .movingDown(let target) = status, currentPosition! <= target {
+                } else if case .movingDown(let target) = status, currentPosition! <= target + stopFactor {
                     stopMoving()
                 }
             } catch let e {
@@ -170,12 +176,13 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
      Moving to a specific position requires to send command to the desk in a loop.
      The desk controller does not have direct support for moving to a specific position continously.
      */
-    // TODO: Reduce overshooting
     func moveToPosition(position: Int) {
         // If we don't have a current position yet, we are trying to move to same position or movement is active then return early
         guard let currentPosition = self.currentPosition, currentPosition != position, moveTimer == nil else {
             return
         }
+        
+        // TODO: Check if the safety stop was triggered
         
         // Determine direction
         let goingUp = position > currentPosition

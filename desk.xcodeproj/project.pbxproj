@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		199609352AD7E323001B60B1 /* DeskControliOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199609342AD7E323001B60B1 /* DeskControliOSApp.swift */; };
+		199609372AD7E323001B60B1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199609362AD7E323001B60B1 /* ContentView.swift */; };
+		199609392AD7E325001B60B1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 199609382AD7E325001B60B1 /* Assets.xcassets */; };
+		1996093C2AD7E325001B60B1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1996093B2AD7E325001B60B1 /* Preview Assets.xcassets */; };
+		199609412AD7E36D001B60B1 /* ParticlePeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA37E24730B27009C815D /* ParticlePeripheral.swift */; };
+		199609422AD7E36F001B60B1 /* DeskConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892FB915248AC2EA0055E2D1 /* DeskConnect.swift */; };
+		199609432AD7E372001B60B1 /* BinUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B309CA2475D94300204950 /* BinUtils.swift */; };
 		892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892FB915248AC2EA0055E2D1 /* DeskConnect.swift */; };
 		896C0E80248BE5D100578941 /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896C0E7F248BE5D100578941 /* EventMonitor.swift */; };
 		89B309CB2475D94300204950 /* BinUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B309CA2475D94300204950 /* BinUtils.swift */; };
@@ -19,6 +26,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		199609322AD7E323001B60B1 /* DeskControliOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeskControliOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		199609342AD7E323001B60B1 /* DeskControliOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskControliOSApp.swift; sourceTree = "<group>"; };
+		199609362AD7E323001B60B1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		199609382AD7E325001B60B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1996093B2AD7E325001B60B1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		892FB915248AC2EA0055E2D1 /* DeskConnect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskConnect.swift; sourceTree = "<group>"; };
 		896C0E7F248BE5D100578941 /* EventMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
 		89B309CA2475D94300204950 /* BinUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinUtils.swift; sourceTree = "<group>"; };
@@ -34,6 +46,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1996092F2AD7E323001B60B1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		89BCA3412472E51B009C815D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -44,19 +63,41 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		892FB914248AC2A60055E2D1 /* DeskController */ = {
+		199609332AD7E323001B60B1 /* DeskControliOS */ = {
+			isa = PBXGroup;
+			children = (
+				199609342AD7E323001B60B1 /* DeskControliOSApp.swift */,
+				199609362AD7E323001B60B1 /* ContentView.swift */,
+				199609382AD7E325001B60B1 /* Assets.xcassets */,
+				1996093A2AD7E325001B60B1 /* Preview Content */,
+			);
+			path = DeskControliOS;
+			sourceTree = "<group>";
+		};
+		1996093A2AD7E325001B60B1 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				1996093B2AD7E325001B60B1 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		199609402AD7E33D001B60B1 /* shared */ = {
 			isa = PBXGroup;
 			children = (
 				89BCA37E24730B27009C815D /* ParticlePeripheral.swift */,
 				892FB915248AC2EA0055E2D1 /* DeskConnect.swift */,
+				89B309CA2475D94300204950 /* BinUtils.swift */,
 			);
-			path = DeskController;
+			path = shared;
 			sourceTree = "<group>";
 		};
 		89BCA33B2472E51B009C815D = {
 			isa = PBXGroup;
 			children = (
+				199609402AD7E33D001B60B1 /* shared */,
 				89BCA3462472E51B009C815D /* desk */,
+				199609332AD7E323001B60B1 /* DeskControliOS */,
 				89BCA3452472E51B009C815D /* Products */,
 				B6B50CCF1E4E57D0DC8E0C81 /* Frameworks */,
 			);
@@ -66,6 +107,7 @@
 			isa = PBXGroup;
 			children = (
 				89BCA3442472E51B009C815D /* desk.app */,
+				199609322AD7E323001B60B1 /* DeskControliOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -73,16 +115,14 @@
 		89BCA3462472E51B009C815D /* desk */ = {
 			isa = PBXGroup;
 			children = (
-				892FB914248AC2A60055E2D1 /* DeskController */,
 				89BCA3472472E51B009C815D /* AppDelegate.swift */,
+				89BCA37A2472F5A5009C815D /* DeskViewController.swift */,
+				896C0E7F248BE5D100578941 /* EventMonitor.swift */,
 				89BCA34B2472E51C009C815D /* Assets.xcassets */,
 				89BCA3502472E51C009C815D /* Main.storyboard */,
-				896C0E7F248BE5D100578941 /* EventMonitor.swift */,
 				89BCA3532472E51C009C815D /* Info.plist */,
 				89BCA3542472E51C009C815D /* desk.entitlements */,
 				89BCA3782472F2A9009C815D /* table.png */,
-				89BCA37A2472F5A5009C815D /* DeskViewController.swift */,
-				89B309CA2475D94300204950 /* BinUtils.swift */,
 			);
 			path = desk;
 			sourceTree = "<group>";
@@ -97,6 +137,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		199609312AD7E323001B60B1 /* DeskControliOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1996093F2AD7E325001B60B1 /* Build configuration list for PBXNativeTarget "DeskControliOS" */;
+			buildPhases = (
+				1996092E2AD7E323001B60B1 /* Sources */,
+				1996092F2AD7E323001B60B1 /* Frameworks */,
+				199609302AD7E323001B60B1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DeskControliOS;
+			productName = DeskControliOS;
+			productReference = 199609322AD7E323001B60B1 /* DeskControliOS.app */;
+			productType = "com.apple.product-type.application";
+		};
 		89BCA3432472E51B009C815D /* desk */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 89BCA36D2472E51C009C815D /* Build configuration list for PBXNativeTarget "desk" */;
@@ -121,10 +178,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastSwiftUpdateCheck = 1140;
+				LastSwiftUpdateCheck = 1430;
 				LastUpgradeCheck = 1430;
 				ORGANIZATIONNAME = Forti;
 				TargetAttributes = {
+					199609312AD7E323001B60B1 = {
+						CreatedOnToolsVersion = 14.3.1;
+					};
 					89BCA3432472E51B009C815D = {
 						CreatedOnToolsVersion = 11.4.1;
 					};
@@ -144,11 +204,21 @@
 			projectRoot = "";
 			targets = (
 				89BCA3432472E51B009C815D /* desk */,
+				199609312AD7E323001B60B1 /* DeskControliOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		199609302AD7E323001B60B1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1996093C2AD7E325001B60B1 /* Preview Assets.xcassets in Resources */,
+				199609392AD7E325001B60B1 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		89BCA3422472E51B009C815D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -162,6 +232,18 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1996092E2AD7E323001B60B1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				199609412AD7E36D001B60B1 /* ParticlePeripheral.swift in Sources */,
+				199609432AD7E372001B60B1 /* BinUtils.swift in Sources */,
+				199609422AD7E36F001B60B1 /* DeskConnect.swift in Sources */,
+				199609372AD7E323001B60B1 /* ContentView.swift in Sources */,
+				199609352AD7E323001B60B1 /* DeskControliOSApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		89BCA3402472E51B009C815D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -189,6 +271,71 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		1996093D2AD7E325001B60B1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"DeskControliOS/Preview Content\"";
+				DEVELOPMENT_TEAM = 286DN3SPR7;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.strsnr.DeskControliOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1996093E2AD7E325001B60B1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"DeskControliOS/Preview Content\"";
+				DEVELOPMENT_TEAM = 286DN3SPR7;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.strsnr.DeskControliOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		89BCA36B2472E51C009C815D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -359,6 +506,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1996093F2AD7E325001B60B1 /* Build configuration list for PBXNativeTarget "DeskControliOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1996093D2AD7E325001B60B1 /* Debug */,
+				1996093E2AD7E325001B60B1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		89BCA33F2472E51B009C815D /* Build configuration list for PBXProject "desk" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

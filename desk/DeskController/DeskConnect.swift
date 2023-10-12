@@ -139,6 +139,14 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
                 let speed = unpacked[1] as! Int
                 currentSpeed = speed
                 
+                // Check if safety stop was triggered by the desk
+                switch self.status {
+                case .movingUp(_) where speed == 0, .movingDown(_) where speed == 0:
+                    self.stopMoving()
+                default:
+                    break
+                }
+                
                 // If we're moving to target then check if we need to stop here
                 // Take speed into account so we don't overshoot
                 let stopFactor = abs(currentSpeed) / 100
@@ -182,18 +190,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
             return
         }
         
-        // TODO: Check if the safety stop was triggered
-        
         // Determine direction
         let goingUp = position > currentPosition
-        
-        // Create timer to call move commands in intervals for continuous movement
-        moveTimer = DispatchSource.makeTimerSource(queue: .main)
-        moveTimer!.setEventHandler {
-            self.peripheral?.writeValue(goingUp ? DeskServices.valueMoveUp : DeskServices.valueMoveDown, for: self.characteristicControl, type: .withResponse)
-        }
-        moveTimer!.schedule(deadline: .now(), repeating: .milliseconds(700))
-        moveTimer?.resume()
         
         // Set status so other methods know what's happening
         if goingUp {
@@ -201,5 +199,13 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
         } else {
             status = .movingDown(position)
         }
+
+        // Create timer to call move commands in intervals for continuous movement
+        moveTimer = DispatchSource.makeTimerSource(queue: .main)
+        moveTimer!.setEventHandler {
+            self.peripheral?.writeValue(goingUp ? DeskServices.valueMoveUp : DeskServices.valueMoveDown, for: self.characteristicControl, type: .withResponse)
+        }
+        moveTimer!.schedule(deadline: .now(), repeating: .milliseconds(700))
+        moveTimer?.resume()
     }
 }

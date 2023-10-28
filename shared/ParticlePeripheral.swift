@@ -30,33 +30,33 @@ public struct DeskServices {
     }
 }
 
-class Desk: NSObject, CBPeripheralDelegate {
-    let peripheral: CBPeripheral
-    
-    // TODO: Verify the services and characteristics are correct
-    
-    init(peripheral: CBPeripheral) {
-        self.peripheral = peripheral
-        super.init()
-        peripheral.delegate = self
-        // Read the position immediately and set to notify of changes
-        // TODO: Somehow get or build a characteristic here
-//        peripheral.readValue(for: <#T##CBCharacteristic#>)
-//        peripheral.setNotifyValue(true, for: <#T##CBCharacteristic#>)
-    }
-
-    // This gets updated by the peripheral delegate
-    private(set) var position: Double?
-    
-    // MARK: - CBPeripheralDelegate
-    
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        if characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition, let value = characteristic.value {
-            let position = Double(value[0])
-            self.position = position
-        }
-    }
-}
+//class Desk: NSObject, CBPeripheralDelegate {
+//    let peripheral: CBPeripheral
+//    
+//    // TODO: Verify the services and characteristics are correct
+//    
+//    init(peripheral: CBPeripheral) {
+//        self.peripheral = peripheral
+//        super.init()
+//        peripheral.delegate = self
+//        // Read the position immediately and set to notify of changes
+//        // TODO: Somehow get or build a characteristic here
+////        peripheral.readValue(for: <#T##CBCharacteristic#>)
+////        peripheral.setNotifyValue(true, for: <#T##CBCharacteristic#>)
+//    }
+//
+//    // This gets updated by the peripheral delegate
+//    private(set) var position: Double?
+//    
+//    // MARK: - CBPeripheralDelegate
+//    
+//    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+//        if characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition, let value = characteristic.value {
+//            let position = Double(value[0])
+//            self.position = position
+//        }
+//    }
+//}
 
 //struct ParticlePeripheral {
 

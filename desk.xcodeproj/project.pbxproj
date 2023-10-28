@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 53;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,6 +14,9 @@
 		199609412AD7E36D001B60B1 /* ParticlePeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA37E24730B27009C815D /* ParticlePeripheral.swift */; };
 		199609422AD7E36F001B60B1 /* DeskConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892FB915248AC2EA0055E2D1 /* DeskConnect.swift */; };
 		199609432AD7E372001B60B1 /* BinUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B309CA2475D94300204950 /* BinUtils.swift */; };
+		19BF5C132AEC231A0035B144 /* DeskObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF5C122AEC231A0035B144 /* DeskObserver.swift */; };
+		19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E2D6552AED19DA00F3EFEE /* Formatting.swift */; };
+		19E2D6572AED19DA00F3EFEE /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E2D6552AED19DA00F3EFEE /* Formatting.swift */; };
 		892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892FB915248AC2EA0055E2D1 /* DeskConnect.swift */; };
 		896C0E80248BE5D100578941 /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896C0E7F248BE5D100578941 /* EventMonitor.swift */; };
 		89B309CB2475D94300204950 /* BinUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B309CA2475D94300204950 /* BinUtils.swift */; };
@@ -31,6 +34,9 @@
 		199609362AD7E323001B60B1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		199609382AD7E325001B60B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1996093B2AD7E325001B60B1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		19BF5C122AEC231A0035B144 /* DeskObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskObserver.swift; sourceTree = "<group>"; };
+		19E2D6512AEC289500F3EFEE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		19E2D6552AED19DA00F3EFEE /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		892FB915248AC2EA0055E2D1 /* DeskConnect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskConnect.swift; sourceTree = "<group>"; };
 		896C0E7F248BE5D100578941 /* EventMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
 		89B309CA2475D94300204950 /* BinUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinUtils.swift; sourceTree = "<group>"; };
@@ -66,8 +72,10 @@
 		199609332AD7E323001B60B1 /* DeskControliOS */ = {
 			isa = PBXGroup;
 			children = (
+				19E2D6512AEC289500F3EFEE /* Info.plist */,
 				199609342AD7E323001B60B1 /* DeskControliOSApp.swift */,
 				199609362AD7E323001B60B1 /* ContentView.swift */,
+				19BF5C122AEC231A0035B144 /* DeskObserver.swift */,
 				199609382AD7E325001B60B1 /* Assets.xcassets */,
 				1996093A2AD7E325001B60B1 /* Preview Content */,
 			);
@@ -88,6 +96,7 @@
 				89BCA37E24730B27009C815D /* ParticlePeripheral.swift */,
 				892FB915248AC2EA0055E2D1 /* DeskConnect.swift */,
 				89B309CA2475D94300204950 /* BinUtils.swift */,
+				19E2D6552AED19DA00F3EFEE /* Formatting.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -236,10 +245,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19BF5C132AEC231A0035B144 /* DeskObserver.swift in Sources */,
 				199609412AD7E36D001B60B1 /* ParticlePeripheral.swift in Sources */,
 				199609432AD7E372001B60B1 /* BinUtils.swift in Sources */,
 				199609422AD7E36F001B60B1 /* DeskConnect.swift in Sources */,
 				199609372AD7E323001B60B1 /* ContentView.swift in Sources */,
+				19E2D6572AED19DA00F3EFEE /* Formatting.swift in Sources */,
 				199609352AD7E323001B60B1 /* DeskControliOSApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -253,6 +264,7 @@
 				89BCA3482472E51B009C815D /* AppDelegate.swift in Sources */,
 				896C0E80248BE5D100578941 /* EventMonitor.swift in Sources */,
 				892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */,
+				19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */,
 				89BCA37F24730B27009C815D /* ParticlePeripheral.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -283,6 +295,8 @@
 				DEVELOPMENT_TEAM = 286DN3SPR7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DeskControliOS/Info.plist;
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Connect to Ikea desk";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -315,6 +329,8 @@
 				DEVELOPMENT_TEAM = 286DN3SPR7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DeskControliOS/Info.plist;
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Connect to Ikea desk";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

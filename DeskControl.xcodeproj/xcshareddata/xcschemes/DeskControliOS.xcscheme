@@ -17,7 +17,7 @@
                BlueprintIdentifier = "199609312AD7E323001B60B1"
                BuildableName = "DeskControliOS.app"
                BlueprintName = "DeskControliOS"
-               ReferencedContainer = "container:desk.xcodeproj">
+               ReferencedContainer = "container:DeskControl.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,7 +46,7 @@
             BlueprintIdentifier = "199609312AD7E323001B60B1"
             BuildableName = "DeskControliOS.app"
             BlueprintName = "DeskControliOS"
-            ReferencedContainer = "container:desk.xcodeproj">
+            ReferencedContainer = "container:DeskControl.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -63,7 +63,7 @@
             BlueprintIdentifier = "199609312AD7E323001B60B1"
             BuildableName = "DeskControliOS.app"
             BlueprintName = "DeskControliOS"
-            ReferencedContainer = "container:desk.xcodeproj">
+            ReferencedContainer = "container:DeskControl.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

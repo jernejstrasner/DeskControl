@@ -18,7 +18,6 @@
 		19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E2D6552AED19DA00F3EFEE /* Formatting.swift */; };
 		19E2D6572AED19DA00F3EFEE /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E2D6552AED19DA00F3EFEE /* Formatting.swift */; };
 		892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892FB915248AC2EA0055E2D1 /* DeskConnect.swift */; };
-		896C0E80248BE5D100578941 /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896C0E7F248BE5D100578941 /* EventMonitor.swift */; };
 		89B309CB2475D94300204950 /* BinUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B309CA2475D94300204950 /* BinUtils.swift */; };
 		89BCA3482472E51B009C815D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA3472472E51B009C815D /* AppDelegate.swift */; };
 		89BCA34C2472E51C009C815D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89BCA34B2472E51C009C815D /* Assets.xcassets */; };
@@ -37,7 +36,6 @@
 		19E2D6512AEC289500F3EFEE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		19E2D6552AED19DA00F3EFEE /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		892FB915248AC2EA0055E2D1 /* DeskConnect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskConnect.swift; sourceTree = "<group>"; };
-		896C0E7F248BE5D100578941 /* EventMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
 		89B309CA2475D94300204950 /* BinUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinUtils.swift; sourceTree = "<group>"; };
 		89BCA3442472E51B009C815D /* DeskControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeskControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89BCA3472472E51B009C815D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -124,7 +122,6 @@
 			children = (
 				89BCA3472472E51B009C815D /* AppDelegate.swift */,
 				89BCA37A2472F5A5009C815D /* DeskViewController.swift */,
-				896C0E7F248BE5D100578941 /* EventMonitor.swift */,
 				89BCA34B2472E51C009C815D /* Assets.xcassets */,
 				89BCA3502472E51C009C815D /* Main.storyboard */,
 				89BCA3532472E51C009C815D /* Info.plist */,
@@ -184,7 +181,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastSwiftUpdateCheck = 1430;
+				LastSwiftUpdateCheck = 1500;
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					199609312AD7E323001B60B1 = {
@@ -257,7 +254,6 @@
 				89B309CB2475D94300204950 /* BinUtils.swift in Sources */,
 				89BCA37B2472F5A5009C815D /* DeskViewController.swift in Sources */,
 				89BCA3482472E51B009C815D /* AppDelegate.swift in Sources */,
-				896C0E80248BE5D100578941 /* EventMonitor.swift in Sources */,
 				892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */,
 				19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */,
 				89BCA37F24730B27009C815D /* ParticlePeripheral.swift in Sources */,

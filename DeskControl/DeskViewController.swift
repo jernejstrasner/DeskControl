@@ -61,19 +61,19 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
     
     var currentPosition: Int! {
         didSet {
-            self.currentValue.stringValue = String(format:"%.1f", Double(currentPosition)/100)
+            self.currentValue.stringValue = formatPosition(currentPosition)
         }
     }
     
     var sitPositionValue: Int? {
         didSet {
-            self.sitPosition.stringValue = String(format:"%.1f", Double(sitPositionValue ?? 0)/100)
+            self.sitPosition.stringValue = formatPosition(sitPositionValue)
         }
     }
     
     var standPositionValue: Int? {
         didSet {
-            self.standPosition.stringValue = String(format:"%.1f", Double(standPositionValue ?? 0)/100)
+            self.standPosition.stringValue = formatPosition(standPositionValue)
         }
     }
     

@@ -32,7 +32,7 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
         buttonDown.isContinuous = true
         buttonDown.setPeriodicDelay(0, interval: 0.7)
         
-        // Get the last connected desk and create a disable menu item
+        // Get the last connected desk and create a menu item
         if let lastDesk = userDefaults!.string(forKey: "desk-id"), let identifier = UUID(uuidString: lastDesk), let deskName = userDefaults!.string(forKey: "desk-name") {
             let item = NSMenuItem()
             item.tag = identifier.hashValue
@@ -171,6 +171,28 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
     
     func deskPositionChanged(position: Int) {
         currentPosition = position
+    }
+    
+    func deskConnectReady() {
+        // Iterate on all menu items and enabled them in case they're disabled
+        for item in deviceChoices.menu!.items {
+            item.isEnabled = true
+        }
+        // Connect to the last connected desk
+        if let lastDesk = userDefaults!.string(forKey: "desk-id"), let identifier = UUID(uuidString: lastDesk) {
+            deskStatus.stringValue = "Connecting..."
+            deskConnect.connect(id: identifier)
+        } else {
+            // Go into search mode
+            deskStatus.stringValue = "Searching..."
+            deskConnect.startDiscovery()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
+                if self?.deskStatus.stringValue == "Searching..." {
+                    self?.deskStatus.stringValue = "Inactive"
+                }
+                self?.deskConnect.stopDiscovery()
+            }
+        }
     }
 }
 

@@ -21,8 +21,8 @@ class DeskViewController: NSViewController, DeskConnectDelegate {
         buttonDown.isEnabled = false
         
         userDefaults = UserDefaults.init(suiteName: "positions")
-        sitPositionValue = userDefaults!.integer(forKey: "sit-position")
-        standPositionValue = userDefaults!.integer(forKey: "stand-position")
+        sitPositionValue = userDefaults!.value(forKey: "sit-position") as? Int
+        standPositionValue = userDefaults!.value(forKey: "stand-position") as? Int
 
         buttonUp.sendAction(on: [.leftMouseDown, .leftMouseUp])
         buttonUp.isContinuous = true

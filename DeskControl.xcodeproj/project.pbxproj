@@ -23,7 +23,6 @@
 		89BCA3482472E51B009C815D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA3472472E51B009C815D /* AppDelegate.swift */; };
 		89BCA34C2472E51C009C815D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89BCA34B2472E51C009C815D /* Assets.xcassets */; };
 		89BCA3522472E51C009C815D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 89BCA3502472E51C009C815D /* Main.storyboard */; };
-		89BCA3792472F2AA009C815D /* table.png in Resources */ = {isa = PBXBuildFile; fileRef = 89BCA3782472F2A9009C815D /* table.png */; };
 		89BCA37B2472F5A5009C815D /* DeskViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA37A2472F5A5009C815D /* DeskViewController.swift */; };
 		89BCA37F24730B27009C815D /* ParticlePeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA37E24730B27009C815D /* ParticlePeripheral.swift */; };
 /* End PBXBuildFile section */
@@ -46,7 +45,6 @@
 		89BCA3512472E51C009C815D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		89BCA3532472E51C009C815D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		89BCA3542472E51C009C815D /* DeskControl.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DeskControl.entitlements; sourceTree = "<group>"; };
-		89BCA3782472F2A9009C815D /* table.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = table.png; sourceTree = "<group>"; };
 		89BCA37A2472F5A5009C815D /* DeskViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskViewController.swift; sourceTree = "<group>"; };
 		89BCA37E24730B27009C815D /* ParticlePeripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticlePeripheral.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -131,7 +129,6 @@
 				89BCA3502472E51C009C815D /* Main.storyboard */,
 				89BCA3532472E51C009C815D /* Info.plist */,
 				89BCA3542472E51C009C815D /* DeskControl.entitlements */,
-				89BCA3782472F2A9009C815D /* table.png */,
 			);
 			path = DeskControl;
 			sourceTree = "<group>";
@@ -231,7 +228,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				89BCA3792472F2AA009C815D /* table.png in Resources */,
 				89BCA3522472E51C009C815D /* Main.storyboard in Resources */,
 				89BCA34C2472E51C009C815D /* Assets.xcassets in Resources */,
 			);

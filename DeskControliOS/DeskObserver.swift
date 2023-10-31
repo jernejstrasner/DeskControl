@@ -29,9 +29,12 @@ extension Desk: RawRepresentable {
 }
 
 class DeskObserver: ObservableObject, DeskConnectDelegate {
+    @Published var connectReady: Bool = false
     @Published var currentPosition: Int? = nil
     @Published var connectedDesk: Desk? = nil
     @Published var discoveredDesks: Set<Desk> = []
+    @Published var isScanning: Bool = false
+    @Published var isConnecting: Bool = false
     
     private var deskConnect: DeskConnect!
     
@@ -40,12 +43,22 @@ class DeskObserver: ObservableObject, DeskConnectDelegate {
         deskConnect.delegate = self
     }
     
+    func deskConnectReady() {
+        connectReady = true
+    }
+    
     func deskDiscovered(name: String, identifier: UUID) {
         discoveredDesks.insert(Desk(id: identifier, name: name))
     }
     
     func deskConnected(name: String, identifier: UUID) {
+        isConnecting = false
         connectedDesk = Desk(id: identifier, name: name)
+    }
+    
+    func deskFailedToConnect(name: String, identifier: UUID) {
+        isConnecting = false
+        connectedDesk = nil
     }
     
     func deskDisconnected(name: String, identifier: UUID) {
@@ -58,8 +71,22 @@ class DeskObserver: ObservableObject, DeskConnectDelegate {
     
     // Public API
     
-    func connect(id: UUID) {
-        deskConnect.connect(id: id)
+    func startDiscovery(timeout: DispatchTimeInterval = .seconds(15)) {
+        isScanning = true
+        deskConnect.startDiscovery()
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { [weak self] in
+            self?.stopDiscovery()
+        }
+    }
+    
+    func stopDiscovery() {
+        deskConnect.stopDiscovery()
+        isScanning = false
+    }
+    
+    func connect(desk: Desk) {
+        isConnecting = true
+        deskConnect.connect(desk: desk)
     }
     
     func moveUp() {

@@ -7,7 +7,19 @@
 //
 
 import Cocoa
+import SwiftUI
 
+#if DEBUG
+@main
+struct DeskControlApp: App {
+    var body: some Scene {
+        MenuBarExtra("Desk Control", image: "MenuIcon") {
+            ContentView()
+        }
+        .menuBarExtraStyle(.window)
+    }
+}
+#else
 @main
 class AppDelegate: NSObject, NSApplicationDelegate {
     
@@ -21,9 +33,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.action = #selector(togglePopover)
         }
         
-        popover.contentViewController = DeskViewController.freshController()
+//        popover.contentViewController = DeskViewController.freshController()
+        let viewController = NSHostingController(rootView: ContentView())
+        viewController.sizingOptions = [.intrinsicContentSize]
+        popover.contentViewController = viewController
+//        viewController.view.invalidateIntrinsicContentSize()
     }
-    
     
     @objc
     func togglePopover() {
@@ -39,15 +54,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
         }
         
-        eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
-            self?.popover.close()
-        }
+//        eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+//            self?.popover.close()
+//        }
     }
     
     func closePopover() {
         if let monitor = eventMonitor {
             NSEvent.removeMonitor(monitor)
         }
+        eventMonitor = nil
         popover.close()
     }
 }
+#endif

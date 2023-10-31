@@ -11,53 +11,59 @@ import SwiftUI
 struct ContentView: View {
     
     @StateObject var deskObserver = DeskObserver()
-    
-    @State private var isSelectingDesk = false
 
-    @AppStorage("last-desk") private var selectedDesk: Desk?
+    @State private var selectedDesk: Desk?
     @AppStorage("sit-position") private var sitPosition: Int?
     @AppStorage("stand-position") private var standPosition: Int?
     
     var body: some View {
         VStack(alignment: .center) {
-            Button(selectedDesk == nil ? "Select Desk" : "\(selectedDesk!.name)") {
-                isSelectingDesk = true
-            }
-            .font(.system(size: 24))
-            .padding([.top, .leading, .trailing])
-            .fullScreenCover(isPresented: $isSelectingDesk) {
-                NavigationStack {
-                    List {
-                        ForEach(Array(deskObserver.discoveredDesks), id: \.id) { desk in
-                            HStack {
-                                Button(desk.name) {
-                                    selectedDesk = desk
-                                    deskObserver.connect(id: desk.id)
-                                    isSelectingDesk = false
-                                }
-                                if selectedDesk == desk {
-                                    Spacer()
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
+            HStack {
+                Picker(selection: $selectedDesk) {
+                    if let desk = selectedDesk, deskObserver.discoveredDesks.contains(desk) == false {
+                        Text(desk.name)
+                            .tag(Optional(desk))
                     }
-                    .navigationTitle("Select Desk")
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                isSelectingDesk = false
-                            }
-                        }
+                    ForEach(deskObserver.discoveredDesks.sorted(by: {$0.name < $1.name})) { desk in
+                        Text(desk.name)
+                            .tag(Optional(desk))
+                    }
+                } label: {}
+                    .disabled(deskObserver.discoveredDesks.isEmpty)
+                if deskObserver.isScanning {
+                    Button {
+                        deskObserver.stopDiscovery()
+                    } label: {
+                        ProgressView()
+                            .controlSize(.small)
+                        #if os(iOS)
+                            .padding(.trailing, 2)
+                        #endif
+                        Text("Cancel")
+                    }
+                } else {
+                    Button("Scan") {
+                        deskObserver.startDiscovery()
                     }
                 }
             }
-            if let desk = deskObserver.connectedDesk, desk == selectedDesk {
-                Text("Connected").padding(.bottom)
+            if selectedDesk != nil, deskObserver.isConnecting {
+                HStack {
+                    ProgressView()
+                        .padding(.trailing, 4)
+                        .controlSize(.small)
+                    Text("Connecting...")
+                        .foregroundStyle(.secondary)
+                }
+            } else if deskObserver.connectedDesk != nil, !deskObserver.isConnecting {
+                Text("Connected")
+                    .foregroundStyle(.secondary)
             } else {
-                Text("Not connected").padding(.bottom)
+                Text("Not connected")
+                    .foregroundStyle(.secondary)
             }
             Divider()
+                .padding(.bottom, 20)
             Button {
                 deskObserver.moveUp()
             } label: {
@@ -81,6 +87,7 @@ struct ContentView: View {
             .buttonStyle(.borderedProminent)
             .disabled(deskObserver.connectedDesk == nil)
             Divider()
+                .padding(.top, 20)
             HStack(alignment: .top) {
                 VStack(alignment: .center) {
                     Text("Sitting position")
@@ -132,10 +139,28 @@ struct ContentView: View {
             }.buttonStyle(.borderedProminent)
         }
         .padding()
-        .onChange(of: deskObserver.discoveredDesks) { _ in
+        .onChange(of: deskObserver.connectReady) { _ in
             // If we have saved desk try to connect to it straight away
-            if let desk = selectedDesk {
-                deskObserver.connect(id: desk.id)
+            if let deskString = UserDefaults.standard.string(forKey: "last-desk"), let desk = Desk(rawValue: deskString) {
+                selectedDesk = desk
+            } else {
+                // Start discovery of new desks
+                deskObserver.startDiscovery()
+            }
+         }
+        .onChange(of: selectedDesk) { desk in
+            // Stop scanning in case ongoing
+            deskObserver.stopDiscovery()
+            // Desk was selected so connect to it if not already
+            if let desk = desk, desk != deskObserver.connectedDesk {
+                deskObserver.connect(desk: desk)
+            }
+        }
+        .onChange(of: deskObserver.connectedDesk) { desk in
+            if let desk = desk {
+                // Desk successfully connected so save it
+                let defaults = UserDefaults.standard
+                defaults.set(desk.rawValue, forKey: "last-desk")
             }
         }
     }

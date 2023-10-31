@@ -8,11 +8,13 @@
 
 import Foundation
 import CoreBluetooth
+import OSLog
 
 protocol DeskConnectDelegate {
     func deskConnectReady()
     func deskDiscovered(name: String, identifier: UUID)
     func deskConnected(name: String, identifier: UUID)
+    func deskFailedToConnect(name: String, identifier: UUID)
     func deskDisconnected(name: String, identifier: UUID)
     func deskPositionChanged(position: Int)
 }
@@ -25,6 +27,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     private var characteristicControl: CBCharacteristic!
     
     private var moveTimer: DispatchSourceTimer? = nil
+    
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DeskConnect")
     
     private enum Status {
         case idle
@@ -51,19 +55,20 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
         centralManager = CBCentralManager(delegate: self, queue: .main)
     }
     
-    func connect(id: UUID) {
+    func connect(desk: Desk) {
+        logger.info("Connecting to \(desk.name)")
         if let peripheral = self.peripheral {
             centralManager.cancelPeripheralConnection(peripheral)
             self.peripheral = nil
         }
-        if let peripheral = self.discoveredDesks[id] {
+        if let peripheral = self.discoveredDesks[desk.id] {
             self.peripheral = peripheral
             self.peripheral!.delegate = self
             self.centralManager.connect(peripheral)
         } else {
-            let peripherals = self.centralManager.retrievePeripherals(withIdentifiers: [id])
+            let peripherals = self.centralManager.retrievePeripherals(withIdentifiers: [desk.id])
             guard let peripheral = peripherals.first else {
-                print("Can't find connected desk with id \(id)")
+                logger.error("Can't find desk \(desk.name)")
                 return
             }
             self.peripheral = peripheral
@@ -73,12 +78,20 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     }
     
     func startDiscovery() {
+        #if DEBUG
+        centralManager.scanForPeripherals(withServices: nil)
+        #else
         // This only works for devices that are actively advertising the service aka. pairing mode
         centralManager.scanForPeripherals(withServices: [DeskServices.control, DeskServices.referenceOutput])
+        #endif
     }
     
     func stopDiscovery() {
         centralManager.stopScan()
+    }
+    
+    var isScanning: Bool {
+        centralManager.isScanning
     }
     
     /// Bluetooth module state updates
@@ -86,7 +99,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state != .poweredOn {
             // TODO: Handle different states
-            print("Bluetooth not powered on \(central.state)")
+            logger.error("Bluetooth not powered on: \(String(describing: central.state))")
         } else {
             delegate?.deskConnectReady()
         }
@@ -104,21 +117,29 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     /// Peripheral connection
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        logger.info("Connected to \(peripheral.name!)")
         self.delegate?.deskConnected(name: peripheral.name!, identifier: peripheral.identifier)
         peripheral.discoverServices([DeskServices.control, DeskServices.referenceOutput])
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        print("Failed to connect to \(peripheral.name!)")
+        logger.info("Failed to connect to \(peripheral.name!)")
+        self.peripheral = nil
+        self.delegate?.deskFailedToConnect(name: peripheral.name!, identifier: peripheral.identifier)
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        print("Disconnected \(peripheral.name!)")
+        logger.info("Disconnected \(peripheral.name!)")
+        self.peripheral = nil
+        self.currentPosition = nil
         self.delegate?.deskDisconnected(name: peripheral.name!, identifier: peripheral.identifier)
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, timestamp: CFAbsoluteTime, isReconnecting: Bool, error: Error?) {
-        print("Disconnected \(peripheral.name!)")
+        logger.info("Disconnected \(peripheral.name!). Reconnecting: \(isReconnecting)")
+        self.peripheral = nil
+        self.currentPosition = nil
+        self.delegate?.deskDisconnected(name: peripheral.name!, identifier: peripheral.identifier)
     }
 
     /// Peripheral services

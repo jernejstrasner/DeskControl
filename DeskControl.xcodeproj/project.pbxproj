@@ -14,6 +14,8 @@
 		199609412AD7E36D001B60B1 /* ParticlePeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA37E24730B27009C815D /* ParticlePeripheral.swift */; };
 		199609422AD7E36F001B60B1 /* DeskConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892FB915248AC2EA0055E2D1 /* DeskConnect.swift */; };
 		199609432AD7E372001B60B1 /* BinUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B309CA2475D94300204950 /* BinUtils.swift */; };
+		19B2F53E2AEF9A77007B674D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199609362AD7E323001B60B1 /* ContentView.swift */; };
+		19B2F53F2AEF9A7E007B674D /* DeskObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF5C122AEC231A0035B144 /* DeskObserver.swift */; };
 		19BF5C132AEC231A0035B144 /* DeskObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF5C122AEC231A0035B144 /* DeskObserver.swift */; };
 		19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E2D6552AED19DA00F3EFEE /* Formatting.swift */; };
 		19E2D6572AED19DA00F3EFEE /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E2D6552AED19DA00F3EFEE /* Formatting.swift */; };
@@ -22,7 +24,6 @@
 		89BCA3482472E51B009C815D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA3472472E51B009C815D /* AppDelegate.swift */; };
 		89BCA34C2472E51C009C815D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89BCA34B2472E51C009C815D /* Assets.xcassets */; };
 		89BCA3522472E51C009C815D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 89BCA3502472E51C009C815D /* Main.storyboard */; };
-		89BCA37B2472F5A5009C815D /* DeskViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA37A2472F5A5009C815D /* DeskViewController.swift */; };
 		89BCA37F24730B27009C815D /* ParticlePeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA37E24730B27009C815D /* ParticlePeripheral.swift */; };
 /* End PBXBuildFile section */
 
@@ -252,8 +253,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				89B309CB2475D94300204950 /* BinUtils.swift in Sources */,
-				89BCA37B2472F5A5009C815D /* DeskViewController.swift in Sources */,
+				19B2F53E2AEF9A77007B674D /* ContentView.swift in Sources */,
 				89BCA3482472E51B009C815D /* AppDelegate.swift in Sources */,
+				19B2F53F2AEF9A7E007B674D /* DeskObserver.swift in Sources */,
 				892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */,
 				19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */,
 				89BCA37F24730B27009C815D /* ParticlePeripheral.swift in Sources */,
@@ -480,7 +482,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.strsnr.DeskControl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -505,7 +507,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.strsnr.DeskControl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

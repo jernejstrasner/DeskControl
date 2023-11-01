@@ -3,7 +3,7 @@
 //  DeskControliOS
 //
 //  Created by Jernej Strasner on 12/10/2023.
-//  Copyright © 2023 Forti. All rights reserved.
+//  Copyright © 2023 strsnr. All rights reserved.
 //
 
 import SwiftUI
@@ -64,28 +64,42 @@ struct ContentView: View {
             }
             Divider()
                 .padding(.bottom, 20)
-            Button {
-                deskObserver.moveUp()
-            } label: {
+            PressButton(action: { pressed in
+                if pressed {
+                    deskObserver.moveUpContinuously()
+                } else {
+                    deskObserver.stopMoving()
+                }
+            }) {
                 Image(systemName: "chevron.up")
                     .imageScale(.large)
-                    .padding([.leading, .trailing])
-                    .padding([.top, .bottom], 4)
+                    .foregroundColor(Color.white)
             }
-            .buttonStyle(.borderedProminent)
             .disabled(deskObserver.connectedDesk == nil)
+            #if os(macOS)
+            .frame(width: 100, height: 32)
+            #else
+            .frame(width: 100, height: 48)
+            #endif
             Text(formatPosition(deskObserver.currentPosition))
                 .font(.system(size: 64))
-            Button {
-                deskObserver.moveDown()
-            } label: {
+            PressButton(action: { pressed in
+                if pressed {
+                    deskObserver.moveDownContinuously()
+                } else {
+                    deskObserver.stopMoving()
+                }
+            }) {
                 Image(systemName: "chevron.down")
                     .imageScale(.large)
-                    .padding([.leading, .trailing])
-                    .padding([.top, .bottom], 4)
+                    .foregroundColor(Color.white)
             }
-            .buttonStyle(.borderedProminent)
             .disabled(deskObserver.connectedDesk == nil)
+            #if os(macOS)
+            .frame(width: 100, height: 32)
+            #else
+            .frame(width: 100, height: 48)
+            #endif
             Divider()
                 .padding(.top, 20)
             HStack(alignment: .top) {
@@ -169,5 +183,8 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+        #if os(macOS)
+            .previewLayout(.fixed(width: 360, height: 560))
+        #endif
     }
 }

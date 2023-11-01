@@ -3,7 +3,7 @@
 //  DeskControliOS
 //
 //  Created by Jernej Strasner on 27. 10. 23.
-//  Copyright © 2023 Forti. All rights reserved.
+//  Copyright © 2023 strsnr. All rights reserved.
 //
 
 import Foundation
@@ -97,7 +97,33 @@ class DeskObserver: ObservableObject, DeskConnectDelegate {
         deskConnect.moveDown()
     }
     
+    private var moveTimer: DispatchSourceTimer? = nil
+    
+    func moveUpContinuously() {
+        stopMoving()
+        let timer = DispatchSource.makeTimerSource()
+        timer.setEventHandler { [weak self] in
+            self?.deskConnect.moveUp()
+        }
+        timer.schedule(deadline: .now(), repeating: .milliseconds(700))
+        timer.resume()
+        moveTimer = timer
+    }
+    
+    func moveDownContinuously() {
+        stopMoving()
+        let timer = DispatchSource.makeTimerSource()
+        timer.setEventHandler { [weak self] in
+            self?.deskConnect.moveDown()
+        }
+        timer.schedule(deadline: .now(), repeating: .milliseconds(700))
+        timer.resume()
+        moveTimer = timer
+    }
+    
     func stopMoving() {
+        moveTimer?.cancel()
+        moveTimer = nil
         deskConnect.stopMoving()
     }
     

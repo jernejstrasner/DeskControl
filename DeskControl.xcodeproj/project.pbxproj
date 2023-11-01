@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		199609352AD7E323001B60B1 /* DeskControliOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199609342AD7E323001B60B1 /* DeskControliOSApp.swift */; };
 		199609372AD7E323001B60B1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199609362AD7E323001B60B1 /* ContentView.swift */; };
 		199609392AD7E325001B60B1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 199609382AD7E325001B60B1 /* Assets.xcassets */; };
 		1996093C2AD7E325001B60B1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1996093B2AD7E325001B60B1 /* Preview Assets.xcassets */; };
@@ -16,6 +15,9 @@
 		199609432AD7E372001B60B1 /* BinUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B309CA2475D94300204950 /* BinUtils.swift */; };
 		19B2F53E2AEF9A77007B674D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199609362AD7E323001B60B1 /* ContentView.swift */; };
 		19B2F53F2AEF9A7E007B674D /* DeskObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF5C122AEC231A0035B144 /* DeskObserver.swift */; };
+		19B2F5412AF27D09007B674D /* PressButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B2F5402AF27D09007B674D /* PressButton.swift */; };
+		19B2F5422AF27D09007B674D /* PressButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B2F5402AF27D09007B674D /* PressButton.swift */; };
+		19B2F5432AF28A4B007B674D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA3472472E51B009C815D /* AppDelegate.swift */; };
 		19BF5C132AEC231A0035B144 /* DeskObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF5C122AEC231A0035B144 /* DeskObserver.swift */; };
 		19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E2D6552AED19DA00F3EFEE /* Formatting.swift */; };
 		19E2D6572AED19DA00F3EFEE /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E2D6552AED19DA00F3EFEE /* Formatting.swift */; };
@@ -23,16 +25,15 @@
 		89B309CB2475D94300204950 /* BinUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B309CA2475D94300204950 /* BinUtils.swift */; };
 		89BCA3482472E51B009C815D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA3472472E51B009C815D /* AppDelegate.swift */; };
 		89BCA34C2472E51C009C815D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89BCA34B2472E51C009C815D /* Assets.xcassets */; };
-		89BCA3522472E51C009C815D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 89BCA3502472E51C009C815D /* Main.storyboard */; };
 		89BCA37F24730B27009C815D /* ParticlePeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA37E24730B27009C815D /* ParticlePeripheral.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		199609322AD7E323001B60B1 /* DeskControliOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeskControliOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		199609342AD7E323001B60B1 /* DeskControliOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskControliOSApp.swift; sourceTree = "<group>"; };
 		199609362AD7E323001B60B1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		199609382AD7E325001B60B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1996093B2AD7E325001B60B1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		19B2F5402AF27D09007B674D /* PressButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressButton.swift; sourceTree = "<group>"; };
 		19BF5C122AEC231A0035B144 /* DeskObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskObserver.swift; sourceTree = "<group>"; };
 		19E2D6512AEC289500F3EFEE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		19E2D6552AED19DA00F3EFEE /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
@@ -41,10 +42,8 @@
 		89BCA3442472E51B009C815D /* DeskControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeskControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89BCA3472472E51B009C815D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		89BCA34B2472E51C009C815D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		89BCA3512472E51C009C815D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		89BCA3532472E51C009C815D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		89BCA3542472E51C009C815D /* DeskControl.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DeskControl.entitlements; sourceTree = "<group>"; };
-		89BCA37A2472F5A5009C815D /* DeskViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskViewController.swift; sourceTree = "<group>"; };
 		89BCA37E24730B27009C815D /* ParticlePeripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticlePeripheral.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -70,9 +69,6 @@
 			isa = PBXGroup;
 			children = (
 				19E2D6512AEC289500F3EFEE /* Info.plist */,
-				199609342AD7E323001B60B1 /* DeskControliOSApp.swift */,
-				199609362AD7E323001B60B1 /* ContentView.swift */,
-				19BF5C122AEC231A0035B144 /* DeskObserver.swift */,
 				199609382AD7E325001B60B1 /* Assets.xcassets */,
 				1996093A2AD7E325001B60B1 /* Preview Content */,
 			);
@@ -90,10 +86,14 @@
 		199609402AD7E33D001B60B1 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				89BCA37E24730B27009C815D /* ParticlePeripheral.swift */,
-				892FB915248AC2EA0055E2D1 /* DeskConnect.swift */,
 				89B309CA2475D94300204950 /* BinUtils.swift */,
+				199609362AD7E323001B60B1 /* ContentView.swift */,
+				892FB915248AC2EA0055E2D1 /* DeskConnect.swift */,
+				19BF5C122AEC231A0035B144 /* DeskObserver.swift */,
 				19E2D6552AED19DA00F3EFEE /* Formatting.swift */,
+				89BCA37E24730B27009C815D /* ParticlePeripheral.swift */,
+				19B2F5402AF27D09007B674D /* PressButton.swift */,
+				89BCA3472472E51B009C815D /* AppDelegate.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -121,10 +121,7 @@
 		89BCA3462472E51B009C815D /* DeskControl */ = {
 			isa = PBXGroup;
 			children = (
-				89BCA3472472E51B009C815D /* AppDelegate.swift */,
-				89BCA37A2472F5A5009C815D /* DeskViewController.swift */,
 				89BCA34B2472E51C009C815D /* Assets.xcassets */,
-				89BCA3502472E51C009C815D /* Main.storyboard */,
 				89BCA3532472E51C009C815D /* Info.plist */,
 				89BCA3542472E51C009C815D /* DeskControl.entitlements */,
 			);
@@ -226,7 +223,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				89BCA3522472E51C009C815D /* Main.storyboard in Resources */,
 				89BCA34C2472E51C009C815D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -238,13 +234,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19B2F5432AF28A4B007B674D /* AppDelegate.swift in Sources */,
 				19BF5C132AEC231A0035B144 /* DeskObserver.swift in Sources */,
 				199609412AD7E36D001B60B1 /* ParticlePeripheral.swift in Sources */,
 				199609432AD7E372001B60B1 /* BinUtils.swift in Sources */,
 				199609422AD7E36F001B60B1 /* DeskConnect.swift in Sources */,
 				199609372AD7E323001B60B1 /* ContentView.swift in Sources */,
+				19B2F5422AF27D09007B674D /* PressButton.swift in Sources */,
 				19E2D6572AED19DA00F3EFEE /* Formatting.swift in Sources */,
-				199609352AD7E323001B60B1 /* DeskControliOSApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,23 +254,13 @@
 				89BCA3482472E51B009C815D /* AppDelegate.swift in Sources */,
 				19B2F53F2AEF9A7E007B674D /* DeskObserver.swift in Sources */,
 				892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */,
+				19B2F5412AF27D09007B674D /* PressButton.swift in Sources */,
 				19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */,
 				89BCA37F24730B27009C815D /* ParticlePeripheral.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		89BCA3502472E51C009C815D /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				89BCA3512472E51C009C815D /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		1996093D2AD7E325001B60B1 /* Debug */ = {
@@ -289,6 +276,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DeskControliOS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Desk Control";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Connect to Ikea desk";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -323,6 +312,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DeskControliOS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Desk Control";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Connect to Ikea desk";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -473,16 +464,20 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 286DN3SPR7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = DeskControl/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Desk Control";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.strsnr.DeskControl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -498,16 +493,20 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 286DN3SPR7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = DeskControl/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Desk Control";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.strsnr.DeskControl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

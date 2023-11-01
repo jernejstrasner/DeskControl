@@ -32,8 +32,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     
     private enum Status {
         case idle
-        case movingUp(Int)
-        case movingDown(Int)
+        case movingUp(Int?)
+        case movingDown(Int?)
     }
     private var status = Status.idle
     
@@ -195,9 +195,10 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
                 // If we're moving to target then check if we need to stop here
                 // Take speed into account so we don't overshoot
                 let stopFactor = abs(currentSpeed) / 100
-                if case .movingUp(let target) = status, currentPosition! >= target - stopFactor {
+                print("Stop factor: \(stopFactor), current: \(currentPosition!), status: \(status)")
+                if case .movingUp(.some(let target)) = status, currentPosition! >= target - stopFactor {
                     stopMoving()
-                } else if case .movingDown(let target) = status, currentPosition! <= target + stopFactor {
+                } else if case .movingDown(.some(let target)) = status, currentPosition! <= target + stopFactor {
                     stopMoving()
                 }
             } catch let e {
@@ -208,12 +209,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     
     /// Peripheral commands
     
-    func moveUp() {
-        self.peripheral?.writeValue(DeskServices.valueMoveUp, for: self.characteristicControl, type: .withResponse)
-    }
-    
-    func moveDown() {
-        self.peripheral?.writeValue(DeskServices.valueMoveDown, for: self.characteristicControl, type: .withResponse)
+    func wakeUp() {
+        self.peripheral?.writeValue(DeskServices.valueWakeUp, for: self.characteristicControl, type: .withResponse)
     }
     
     func stopMoving() {
@@ -223,36 +220,81 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
         self.peripheral?.writeValue(DeskServices.valueStopMove, for: self.characteristicControl, type: .withResponse)
     }
     
-    func wakeUp() {
-        self.peripheral?.writeValue(DeskServices.valueWakeUp, for: self.characteristicControl, type: .withResponse)
+    enum Direction {
+        case up, down
     }
     
+    func move(_ direction: Direction, continuously: Bool = false) {
+        // If we haven't fetched the current position yet then make it a no-op
+        if currentPosition == nil {
+            return
+        }
+        
+        // If we're currently moving stop it
+        stopMoving()
+        
+        // Set state
+        let command: Data
+        switch direction {
+        case .up:
+            status = .movingUp(nil)
+            command = DeskServices.valueMoveUp
+        case .down:
+            status = .movingDown(nil)
+            command = DeskServices.valueMoveDown
+        }
+        
+        if continuously {
+            let timer = DispatchSource.makeTimerSource()
+            timer.setEventHandler { [weak self] in
+                if let self = self {
+                    self.peripheral?.writeValue(command, for: self.characteristicControl, type: .withoutResponse)
+                }
+            }
+            timer.schedule(deadline: .now(), repeating: .milliseconds(700))
+            timer.resume()
+            moveTimer = timer
+        } else {
+            self.peripheral?.writeValue(command, for: self.characteristicControl, type: .withoutResponse)
+        }
+    }
+
     /**
      Moving to a specific position requires to send command to the desk in a loop.
      The desk controller does not have direct support for moving to a specific position continously.
      */
-    func moveToPosition(position: Int) {
-        // If we don't have a current position yet, we are trying to move to same position or movement is active then return early
-        guard let currentPosition = self.currentPosition, currentPosition != position, moveTimer == nil else {
+    func move(to position: Int) {
+        // If we don't have a current position yet or we are trying to move to same position
+        // TODO: Approximate comparison, we'll never been completely precise here
+        guard let currentPosition = self.currentPosition, currentPosition != position else {
             return
         }
         
-        // Determine direction
-        let goingUp = position > currentPosition
+        // Stop in case we're moving
+        stopMoving()
         
-        // Set status so other methods know what's happening
-        if goingUp {
+        // Determine direction
+        let direction: Direction = position > currentPosition ? .up : .down
+        let command: Data
+        switch direction {
+        case .up:
             status = .movingUp(position)
-        } else {
+            command = DeskServices.valueMoveUp
+        case .down:
             status = .movingDown(position)
+            command = DeskServices.valueMoveDown
         }
 
-        // Create timer to call move commands in intervals for continuous movement
-        moveTimer = DispatchSource.makeTimerSource(queue: .main)
-        moveTimer!.setEventHandler {
-            self.peripheral?.writeValue(goingUp ? DeskServices.valueMoveUp : DeskServices.valueMoveDown, for: self.characteristicControl, type: .withResponse)
+        // Initiate the timer loop
+        let timer = DispatchSource.makeTimerSource()
+        timer.setEventHandler { [weak self] in
+            if let self = self {
+                self.peripheral?.writeValue(command, for: self.characteristicControl, type: .withoutResponse)
+            }
         }
-        moveTimer!.schedule(deadline: .now(), repeating: .milliseconds(700))
-        moveTimer?.resume()
+        timer.schedule(deadline: .now(), repeating: .milliseconds(700))
+        timer.resume()
+        moveTimer = timer
     }
+    
 }

@@ -66,7 +66,7 @@ struct ContentView: View {
                 .padding(.bottom, 20)
             PressButton(action: { pressed in
                 if pressed {
-                    deskObserver.moveUpContinuously()
+                    deskObserver.move(.up, continuosly: true)
                 } else {
                     deskObserver.stopMoving()
                 }
@@ -85,7 +85,7 @@ struct ContentView: View {
                 .font(.system(size: 64))
             PressButton(action: { pressed in
                 if pressed {
-                    deskObserver.moveDownContinuously()
+                    deskObserver.move(.down, continuosly: true)
                 } else {
                     deskObserver.stopMoving()
                 }
@@ -108,7 +108,7 @@ struct ContentView: View {
                     Text(formatPosition(sitPosition))
                         .font(.system(size: 36))
                     Button {
-                        deskObserver.moveTo(position: sitPosition!)
+                        deskObserver.move(to: sitPosition!)
                     } label: {
                         Text("Move to")
                     }
@@ -128,7 +128,7 @@ struct ContentView: View {
                     Text(formatPosition(standPosition))
                         .font(.system(size: 36))
                     Button {
-                        deskObserver.moveTo(position: standPosition!)
+                        deskObserver.move(to: standPosition!)
                     } label: {
                         Text("Move to")
                     }

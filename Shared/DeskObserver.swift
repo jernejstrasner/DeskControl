@@ -89,46 +89,16 @@ class DeskObserver: ObservableObject, DeskConnectDelegate {
         deskConnect.connect(desk: desk)
     }
     
-    func moveUp() {
-        deskConnect.moveUp()
+    func move(_ direction: DeskConnect.Direction, continuosly: Bool) {
+        deskConnect.move(direction, continuously: continuosly)
     }
     
-    func moveDown() {
-        deskConnect.moveDown()
-    }
-    
-    private var moveTimer: DispatchSourceTimer? = nil
-    
-    func moveUpContinuously() {
-        stopMoving()
-        let timer = DispatchSource.makeTimerSource()
-        timer.setEventHandler { [weak self] in
-            self?.deskConnect.moveUp()
-        }
-        timer.schedule(deadline: .now(), repeating: .milliseconds(700))
-        timer.resume()
-        moveTimer = timer
-    }
-    
-    func moveDownContinuously() {
-        stopMoving()
-        let timer = DispatchSource.makeTimerSource()
-        timer.setEventHandler { [weak self] in
-            self?.deskConnect.moveDown()
-        }
-        timer.schedule(deadline: .now(), repeating: .milliseconds(700))
-        timer.resume()
-        moveTimer = timer
+    func move(to position: Int) {
+        deskConnect.move(to: position)
     }
     
     func stopMoving() {
-        moveTimer?.cancel()
-        moveTimer = nil
         deskConnect.stopMoving()
-    }
-    
-    func moveTo(position: Int) {
-        deskConnect.moveToPosition(position: position)
     }
     
     func wakeUp() {

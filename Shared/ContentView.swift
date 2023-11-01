@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ContentView: View {
     
-    @StateObject var deskObserver = DeskObserver()
+    @StateObject var deskConnect = DeskConnect()
 
     @State private var selectedDesk: Desk?
     @AppStorage("sit-position") private var sitPosition: Int?
@@ -20,19 +20,19 @@ struct ContentView: View {
         VStack(alignment: .center) {
             HStack {
                 Picker(selection: $selectedDesk) {
-                    if let desk = selectedDesk, deskObserver.discoveredDesks.contains(desk) == false {
+                    if let desk = selectedDesk, deskConnect.discoveredDesks.contains(desk) == false {
                         Text(desk.name)
                             .tag(Optional(desk))
                     }
-                    ForEach(deskObserver.discoveredDesks.sorted(by: {$0.name < $1.name})) { desk in
+                    ForEach(deskConnect.discoveredDesks.sorted(by: {$0.name < $1.name})) { desk in
                         Text(desk.name)
                             .tag(Optional(desk))
                     }
                 } label: {}
-                    .disabled(deskObserver.discoveredDesks.isEmpty)
-                if deskObserver.isScanning {
+                    .disabled(deskConnect.discoveredDesks.isEmpty)
+                if deskConnect.isScanning {
                     Button {
-                        deskObserver.stopDiscovery()
+                        deskConnect.stopDiscovery()
                     } label: {
                         ProgressView()
                             .controlSize(.small)
@@ -43,11 +43,11 @@ struct ContentView: View {
                     }
                 } else {
                     Button("Scan") {
-                        deskObserver.startDiscovery()
+                        deskConnect.startDiscovery()
                     }
                 }
             }
-            if selectedDesk != nil, deskObserver.isConnecting {
+            if selectedDesk != nil, deskConnect.isConnecting {
                 HStack {
                     ProgressView()
                         .padding(.trailing, 4)
@@ -55,7 +55,7 @@ struct ContentView: View {
                     Text("Connecting...")
                         .foregroundStyle(.secondary)
                 }
-            } else if deskObserver.connectedDesk != nil, !deskObserver.isConnecting {
+            } else if deskConnect.connectedDesk != nil, !deskConnect.isConnecting {
                 Text("Connected")
                     .foregroundStyle(.secondary)
             } else {
@@ -66,35 +66,35 @@ struct ContentView: View {
                 .padding(.bottom, 20)
             PressButton(action: { pressed in
                 if pressed {
-                    deskObserver.move(.up, continuosly: true)
+                    deskConnect.move(.up, continuously: true)
                 } else {
-                    deskObserver.stopMoving()
+                    deskConnect.stopMoving()
                 }
             }) {
                 Image(systemName: "chevron.up")
                     .imageScale(.large)
                     .foregroundColor(Color.white)
             }
-            .disabled(deskObserver.connectedDesk == nil)
+            .disabled(deskConnect.connectedDesk == nil)
             #if os(macOS)
             .frame(width: 100, height: 32)
             #else
             .frame(width: 100, height: 48)
             #endif
-            Text(formatPosition(deskObserver.currentPosition))
+            Text(formatPosition(deskConnect.currentPosition))
                 .font(.system(size: 64))
             PressButton(action: { pressed in
                 if pressed {
-                    deskObserver.move(.down, continuosly: true)
+                    deskConnect.move(.down, continuously: true)
                 } else {
-                    deskObserver.stopMoving()
+                    deskConnect.stopMoving()
                 }
             }) {
                 Image(systemName: "chevron.down")
                     .imageScale(.large)
                     .foregroundColor(Color.white)
             }
-            .disabled(deskObserver.connectedDesk == nil)
+            .disabled(deskConnect.connectedDesk == nil)
             #if os(macOS)
             .frame(width: 100, height: 32)
             #else
@@ -108,19 +108,19 @@ struct ContentView: View {
                     Text(formatPosition(sitPosition))
                         .font(.system(size: 36))
                     Button {
-                        deskObserver.move(to: sitPosition!)
+                        deskConnect.move(to: sitPosition!)
                     } label: {
                         Text("Move to")
                     }
                     .buttonStyle(.bordered)
                     .disabled(sitPosition == nil)
                     Button {
-                        sitPosition = deskObserver.currentPosition
+                        sitPosition = deskConnect.currentPosition
                     } label: {
                         Text("Save")
                     }
                     .buttonStyle(.bordered)
-                    .disabled(deskObserver.connectedDesk == nil)
+                    .disabled(deskConnect.connectedDesk == nil)
                 }.frame(maxWidth: .infinity)
                 Divider()
                 VStack(alignment: .center) {
@@ -128,23 +128,23 @@ struct ContentView: View {
                     Text(formatPosition(standPosition))
                         .font(.system(size: 36))
                     Button {
-                        deskObserver.move(to: standPosition!)
+                        deskConnect.move(to: standPosition!)
                     } label: {
                         Text("Move to")
                     }
                     .buttonStyle(.bordered)
                     .disabled(standPosition == nil)
                     Button {
-                        standPosition = deskObserver.currentPosition
+                        standPosition = deskConnect.currentPosition
                     } label: {
                         Text("Save")
                     }
                     .buttonStyle(.bordered)
-                    .disabled(deskObserver.connectedDesk == nil)
+                    .disabled(deskConnect.connectedDesk == nil)
                 }.frame(maxWidth: .infinity)
             }.frame(maxWidth: .infinity)
             Button {
-                deskObserver.stopMoving()
+                deskConnect.stopMoving()
             } label: {
                 Text("Stop")
                     .fontWeight(.bold)
@@ -153,24 +153,26 @@ struct ContentView: View {
             }.buttonStyle(.borderedProminent)
         }
         .padding()
-        .onChange(of: deskObserver.connectReady) { _ in
-            // If we have saved desk try to connect to it straight away
-            if let deskString = UserDefaults.standard.string(forKey: "last-desk"), let desk = Desk(rawValue: deskString) {
-                selectedDesk = desk
-            } else {
-                // Start discovery of new desks
-                deskObserver.startDiscovery()
+        .onChange(of: deskConnect.centralState) { value in
+            if value == .poweredOn {
+                // If we have saved desk try to connect to it straight away
+                if let deskString = UserDefaults.standard.string(forKey: "last-desk"), let desk = Desk(rawValue: deskString) {
+                    selectedDesk = desk
+                } else {
+                    // Start discovery of new desks
+                    deskConnect.startDiscovery()
+                }
             }
          }
         .onChange(of: selectedDesk) { desk in
             // Stop scanning in case ongoing
-            deskObserver.stopDiscovery()
+            deskConnect.stopDiscovery()
             // Desk was selected so connect to it if not already
-            if let desk = desk, desk != deskObserver.connectedDesk {
-                deskObserver.connect(desk: desk)
+            if let desk = desk, desk != deskConnect.connectedDesk {
+                deskConnect.connect(desk: desk)
             }
         }
-        .onChange(of: deskObserver.connectedDesk) { desk in
+        .onChange(of: deskConnect.connectedDesk) { desk in
             if let desk = desk {
                 // Desk successfully connected so save it
                 let defaults = UserDefaults.standard

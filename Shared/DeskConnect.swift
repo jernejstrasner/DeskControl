@@ -10,19 +10,24 @@ import Foundation
 import CoreBluetooth
 import OSLog
 
-protocol DeskConnectDelegate {
-    func deskConnectReady()
-    func deskDiscovered(name: String, identifier: UUID)
-    func deskConnected(name: String, identifier: UUID)
-    func deskFailedToConnect(name: String, identifier: UUID)
-    func deskDisconnected(name: String, identifier: UUID)
-    func deskPositionChanged(position: Int)
+struct Desk: Identifiable, Hashable {
+    let id: UUID
+    let name: String
 }
 
-class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
+extension Desk {
+    init?(peripheral: CBPeripheral) {
+        guard let name = peripheral.name else {
+            return nil
+        }
+        self.name = name
+        self.id = peripheral.identifier
+    }
+}
+
+class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, ObservableObject {
     private var centralManager: CBCentralManager!
     private var peripheral: CBPeripheral?
-    
     private var characteristicPosition: CBCharacteristic!
     private var characteristicControl: CBCharacteristic!
     
@@ -37,18 +42,13 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     }
     private var status = Status.idle
     
-    private var discoveredDesks: [UUID: CBPeripheral] = [:]
-    
-    var delegate: DeskConnectDelegate?
-    
-    var currentPosition: Int? = nil {
-        didSet {
-            if let val = currentPosition {
-                self.delegate?.deskPositionChanged(position: val)
-            }
-        }
-    }
-    var currentSpeed: Int = 0
+    @Published var centralState: CBManagerState = .unknown
+    @Published var discoveredDesks: Set<Desk> = []
+    @Published var currentPosition: Int? = nil
+    @Published var currentSpeed: Int = 0
+    @Published var connectedDesk: Desk? = nil
+    @Published var isScanning: Bool = false
+    @Published var isConnecting: Bool = false
     
     override init() {
         super.init()
@@ -59,58 +59,58 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
         logger.info("Connecting to \(desk.name)")
         if let peripheral = self.peripheral {
             centralManager.cancelPeripheralConnection(peripheral)
-            self.peripheral = nil
         }
-        if let peripheral = self.discoveredDesks[desk.id] {
-            self.peripheral = peripheral
-            self.peripheral!.delegate = self
-            self.centralManager.connect(peripheral)
-        } else {
-            let peripherals = self.centralManager.retrievePeripherals(withIdentifiers: [desk.id])
-            guard let peripheral = peripherals.first else {
-                logger.error("Can't find desk \(desk.name)")
-                return
-            }
-            self.peripheral = peripheral
-            self.peripheral!.delegate = self
-            self.centralManager.connect(peripheral)
+
+        let peripherals = self.centralManager.retrievePeripherals(withIdentifiers: [desk.id])
+        guard let peripheral = peripherals.first else {
+            logger.error("Can't find desk \(desk.name)")
+            return
         }
+        self.peripheral = peripheral
+        self.peripheral!.delegate = self
+        isConnecting = true
+        self.centralManager.connect(peripheral)
     }
     
-    func startDiscovery() {
+    private var discoveryHandle: DispatchWorkItem? = nil
+    
+    func startDiscovery(timeout: DispatchTimeInterval = .seconds(15)) {
+        if isScanning {
+            return
+        }
+        isScanning = true
         #if DEBUG
         centralManager.scanForPeripherals(withServices: nil)
         #else
         // This only works for devices that are actively advertising the service aka. pairing mode
         centralManager.scanForPeripherals(withServices: [DeskServices.control, DeskServices.referenceOutput])
         #endif
+        discoveryHandle = DispatchWorkItem { [weak self] in
+            self?.stopDiscovery()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout, execute: discoveryHandle!)
     }
     
     func stopDiscovery() {
+        discoveryHandle?.cancel()
         centralManager.stopScan()
-    }
-    
-    var isScanning: Bool {
-        centralManager.isScanning
+        isScanning = false
     }
     
     /// Bluetooth module state updates
      
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        centralState = central.state
         if central.state != .poweredOn {
-            // TODO: Handle different states
             logger.error("Bluetooth not powered on: \(String(describing: central.state))")
-        } else {
-            delegate?.deskConnectReady()
         }
     }
     
     /// Peripheral discovery
 
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        if let deviceName = peripheral.name, self.discoveredDesks[peripheral.identifier] == nil {
-            self.discoveredDesks[peripheral.identifier] = peripheral
-            self.delegate?.deskDiscovered(name: deviceName, identifier: peripheral.identifier)
+        if let desk = Desk(peripheral: peripheral) {
+            self.discoveredDesks.insert(desk)
         }
     }
     
@@ -118,28 +118,35 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         logger.info("Connected to \(peripheral.name!)")
-        self.delegate?.deskConnected(name: peripheral.name!, identifier: peripheral.identifier)
-        peripheral.discoverServices([DeskServices.control, DeskServices.referenceOutput])
+        self.isConnecting = false
+        if let desk = Desk(peripheral: peripheral) {
+            self.connectedDesk = desk
+            peripheral.discoverServices([DeskServices.control, DeskServices.referenceOutput])
+        } else {
+            logger.error("Invalid desk connected. Not a desk?")
+        }
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        logger.info("Failed to connect to \(peripheral.name!)")
+        logger.error("Failed to connect to \(peripheral.name!)")
         self.peripheral = nil
-        self.delegate?.deskFailedToConnect(name: peripheral.name!, identifier: peripheral.identifier)
+        self.isConnecting = false
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         logger.info("Disconnected \(peripheral.name!)")
         self.peripheral = nil
         self.currentPosition = nil
-        self.delegate?.deskDisconnected(name: peripheral.name!, identifier: peripheral.identifier)
+        self.connectedDesk = nil
+        self.isConnecting = false
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, timestamp: CFAbsoluteTime, isReconnecting: Bool, error: Error?) {
         logger.info("Disconnected \(peripheral.name!). Reconnecting: \(isReconnecting)")
         self.peripheral = nil
         self.currentPosition = nil
-        self.delegate?.deskDisconnected(name: peripheral.name!, identifier: peripheral.identifier)
+        self.connectedDesk = nil
+        self.isConnecting = false
     }
 
     /// Peripheral services
@@ -297,4 +304,19 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate {
         moveTimer = timer
     }
     
+}
+
+extension Desk: RawRepresentable {
+    init?(rawValue: String) {
+        let parts = rawValue.split(separator: "|")
+        guard parts.count == 2, let id = UUID(uuidString: String(parts[0])) else {
+            return nil
+        }
+        self.id = id
+        self.name = String(parts[1])
+    }
+    
+    var rawValue: String {
+        "\(id.uuidString)|\(name)"
+    }
 }

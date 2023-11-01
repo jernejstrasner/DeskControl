@@ -14,11 +14,9 @@
 		199609422AD7E36F001B60B1 /* DeskConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892FB915248AC2EA0055E2D1 /* DeskConnect.swift */; };
 		199609432AD7E372001B60B1 /* BinUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B309CA2475D94300204950 /* BinUtils.swift */; };
 		19B2F53E2AEF9A77007B674D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199609362AD7E323001B60B1 /* ContentView.swift */; };
-		19B2F53F2AEF9A7E007B674D /* DeskObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF5C122AEC231A0035B144 /* DeskObserver.swift */; };
 		19B2F5412AF27D09007B674D /* PressButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B2F5402AF27D09007B674D /* PressButton.swift */; };
 		19B2F5422AF27D09007B674D /* PressButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B2F5402AF27D09007B674D /* PressButton.swift */; };
 		19B2F5432AF28A4B007B674D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89BCA3472472E51B009C815D /* AppDelegate.swift */; };
-		19BF5C132AEC231A0035B144 /* DeskObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF5C122AEC231A0035B144 /* DeskObserver.swift */; };
 		19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E2D6552AED19DA00F3EFEE /* Formatting.swift */; };
 		19E2D6572AED19DA00F3EFEE /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E2D6552AED19DA00F3EFEE /* Formatting.swift */; };
 		892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892FB915248AC2EA0055E2D1 /* DeskConnect.swift */; };
@@ -34,7 +32,6 @@
 		199609382AD7E325001B60B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1996093B2AD7E325001B60B1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		19B2F5402AF27D09007B674D /* PressButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressButton.swift; sourceTree = "<group>"; };
-		19BF5C122AEC231A0035B144 /* DeskObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskObserver.swift; sourceTree = "<group>"; };
 		19E2D6512AEC289500F3EFEE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		19E2D6552AED19DA00F3EFEE /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		892FB915248AC2EA0055E2D1 /* DeskConnect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskConnect.swift; sourceTree = "<group>"; };
@@ -89,7 +86,6 @@
 				89B309CA2475D94300204950 /* BinUtils.swift */,
 				199609362AD7E323001B60B1 /* ContentView.swift */,
 				892FB915248AC2EA0055E2D1 /* DeskConnect.swift */,
-				19BF5C122AEC231A0035B144 /* DeskObserver.swift */,
 				19E2D6552AED19DA00F3EFEE /* Formatting.swift */,
 				89BCA37E24730B27009C815D /* ParticlePeripheral.swift */,
 				19B2F5402AF27D09007B674D /* PressButton.swift */,
@@ -235,7 +231,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				19B2F5432AF28A4B007B674D /* AppDelegate.swift in Sources */,
-				19BF5C132AEC231A0035B144 /* DeskObserver.swift in Sources */,
 				199609412AD7E36D001B60B1 /* ParticlePeripheral.swift in Sources */,
 				199609432AD7E372001B60B1 /* BinUtils.swift in Sources */,
 				199609422AD7E36F001B60B1 /* DeskConnect.swift in Sources */,
@@ -252,7 +247,6 @@
 				89B309CB2475D94300204950 /* BinUtils.swift in Sources */,
 				19B2F53E2AEF9A77007B674D /* ContentView.swift in Sources */,
 				89BCA3482472E51B009C815D /* AppDelegate.swift in Sources */,
-				19B2F53F2AEF9A7E007B674D /* DeskObserver.swift in Sources */,
 				892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */,
 				19B2F5412AF27D09007B674D /* PressButton.swift in Sources */,
 				19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */,

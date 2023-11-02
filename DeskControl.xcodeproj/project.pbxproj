@@ -465,6 +465,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DeskControl/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Desk Control";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The app maintains a connection to the Ikea stand-up desk.";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "The app maintains a connection to the Ikea stand-up desk.";
@@ -497,6 +499,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DeskControl/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Desk Control";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The app maintains a connection to the Ikea stand-up desk.";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "The app maintains a connection to the Ikea stand-up desk.";

@@ -32,6 +32,7 @@
 		199609382AD7E325001B60B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1996093B2AD7E325001B60B1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		19B2F5402AF27D09007B674D /* PressButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressButton.swift; sourceTree = "<group>"; };
+		19D1C67A2AF39AB800652C58 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		19E2D6512AEC289500F3EFEE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		19E2D6552AED19DA00F3EFEE /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		892FB915248AC2EA0055E2D1 /* DeskConnect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskConnect.swift; sourceTree = "<group>"; };
@@ -39,7 +40,6 @@
 		89BCA3442472E51B009C815D /* DeskControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeskControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89BCA3472472E51B009C815D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		89BCA34B2472E51C009C815D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		89BCA3532472E51C009C815D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		89BCA3542472E51C009C815D /* DeskControl.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DeskControl.entitlements; sourceTree = "<group>"; };
 		89BCA37E24730B27009C815D /* ParticlePeripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticlePeripheral.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -117,8 +117,8 @@
 		89BCA3462472E51B009C815D /* DeskControl */ = {
 			isa = PBXGroup;
 			children = (
+				19D1C67A2AF39AB800652C58 /* Info.plist */,
 				89BCA34B2472E51C009C815D /* Assets.xcassets */,
-				89BCA3532472E51C009C815D /* Info.plist */,
 				89BCA3542472E51C009C815D /* DeskControl.entitlements */,
 			);
 			path = DeskControl;
@@ -463,9 +463,12 @@
 				DEVELOPMENT_TEAM = 286DN3SPR7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DeskControl/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Desk Control";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The app maintains a connection to the Ikea stand-up desk.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "The app maintains a connection to the Ikea stand-up desk.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 strsnr.com. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -492,9 +495,12 @@
 				DEVELOPMENT_TEAM = 286DN3SPR7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DeskControl/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Desk Control";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The app maintains a connection to the Ikea stand-up desk.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "The app maintains a connection to the Ikea stand-up desk.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 strsnr.com. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

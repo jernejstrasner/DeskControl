@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		194B49272AF4DDF900AF0AF7 /* SentrySwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 194B49262AF4DDF900AF0AF7 /* SentrySwiftUI */; };
 		199609372AD7E323001B60B1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199609362AD7E323001B60B1 /* ContentView.swift */; };
 		199609392AD7E325001B60B1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 199609382AD7E325001B60B1 /* Assets.xcassets */; };
 		1996093C2AD7E325001B60B1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1996093B2AD7E325001B60B1 /* Preview Assets.xcassets */; };
@@ -56,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				194B49272AF4DDF900AF0AF7 /* SentrySwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,12 +160,16 @@
 				89BCA3402472E51B009C815D /* Sources */,
 				89BCA3412472E51B009C815D /* Frameworks */,
 				89BCA3422472E51B009C815D /* Resources */,
+				194B49252AF4D72D00AF0AF7 /* Upload symbols to Sentry */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = DeskControl;
+			packageProductDependencies = (
+				194B49262AF4DDF900AF0AF7 /* SentrySwiftUI */,
+			);
 			productName = desk;
 			productReference = 89BCA3442472E51B009C815D /* DeskControl.app */;
 			productType = "com.apple.product-type.application";
@@ -195,6 +201,9 @@
 				Base,
 			);
 			mainGroup = 89BCA33B2472E51B009C815D;
+			packageReferences = (
+				19D1C67B2AF41CE000652C58 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+			);
 			productRefGroup = 89BCA3452472E51B009C815D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -224,6 +233,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		194B49252AF4D72D00AF0AF7 /* Upload symbols to Sentry */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+			);
+			name = "Upload symbols to Sentry";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\" # We need this if sentry-cli was installed via Homebrew\nif which sentry-cli >/dev/null; then\nexport SENTRY_ORG=jernej-dk\nexport SENTRY_PROJECT=nextjs\nexport SENTRY_AUTH_TOKEN=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\nERROR=$(sentry-cli debug-files upload --include-sources \"$DWARF_DSYM_FOLDER_PATH\" 2>&1 >/dev/null)\nif [ ! $? -eq 0 ]; then\necho \"warning: sentry-cli - $ERROR\"\nfi\nelse\necho \"warning: sentry-cli not installed, download from https://github.com/getsentry/sentry-cli/releases\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		1996092E2AD7E323001B60B1 /* Sources */ = {
@@ -460,6 +492,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 286DN3SPR7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -548,6 +581,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		19D1C67B2AF41CE000652C58 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.14.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		194B49262AF4DDF900AF0AF7 /* SentrySwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 19D1C67B2AF41CE000652C58 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = SentrySwiftUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 89BCA33C2472E51B009C815D /* Project object */;
 }

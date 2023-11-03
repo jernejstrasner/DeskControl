@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SentrySwiftUI
 
 public struct PressButton<Label>: View where Label: View {
 
@@ -20,16 +21,18 @@ public struct PressButton<Label>: View where Label: View {
     }
 
     public var body: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(!isEnabled ? Color.secondary : Color.accentColor)
-            .onLongPressGesture(minimumDuration: .infinity, perform: {}) { pressing in
-                action(pressing)
-            }
-            .disabled(!isEnabled)
-            .overlay {
-                label
-                    .allowsHitTesting(false)
-            }
+        SentryTracedView("Press Button") {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(!isEnabled ? Color.secondary : Color.accentColor)
+                .onLongPressGesture(minimumDuration: .infinity, perform: {}) { pressing in
+                    action(pressing)
+                }
+                .disabled(!isEnabled)
+                .overlay {
+                    label
+                        .allowsHitTesting(false)
+                }
+        }
     }
 
 }

@@ -202,14 +202,13 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
                 // If we're moving to target then check if we need to stop here
                 // Take speed into account so we don't overshoot
                 let stopFactor = abs(currentSpeed) / 100
-                print("Stop factor: \(stopFactor), current: \(currentPosition!), status: \(status)")
                 if case .movingUp(.some(let target)) = status, currentPosition! >= target - stopFactor {
                     stopMoving()
                 } else if case .movingDown(.some(let target)) = status, currentPosition! <= target + stopFactor {
                     stopMoving()
                 }
             } catch let e {
-                print("Error unpacking position: \(e)")
+                logger.error("Error unpacking position: \(e)")
             }
         }
     }

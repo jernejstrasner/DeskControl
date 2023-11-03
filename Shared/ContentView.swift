@@ -11,6 +11,10 @@ import SentrySwiftUI
 
 struct ContentView: View {
     
+    #if os(iOS)
+    @Environment(\.scenePhase) var scenePhase
+    #endif
+
     @StateObject var deskConnect = DeskConnect()
 
     @State private var selectedDesk: Desk?
@@ -166,6 +170,19 @@ struct ContentView: View {
                 #endif
             }
             .padding()
+            #if os(iOS)
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active, deskConnect.centralState == .poweredOn, deskConnect.isConnecting == false, deskConnect.isScanning == false, deskConnect.connectedDesk == nil {
+                    // If we have saved desk try to connect to it straight away
+                    if let deskString = UserDefaults.standard.string(forKey: "last-desk"), let desk = Desk(rawValue: deskString) {
+                        selectedDesk = desk
+                    } else {
+                        // Start discovery of new desks
+                        deskConnect.startDiscovery()
+                    }
+                }
+            }
+            #endif
             .onChange(of: deskConnect.centralState) { value in
                 if value == .poweredOn {
                     // If we have saved desk try to connect to it straight away
@@ -191,6 +208,7 @@ struct ContentView: View {
                     let defaults = UserDefaults.standard
                     defaults.set(desk.rawValue, forKey: "last-desk")
                 }
+                selectedDesk = desk
             }
         }
     }

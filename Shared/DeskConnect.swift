@@ -10,6 +10,9 @@ import Foundation
 import CoreBluetooth
 import OSLog
 import Sentry
+#if os(iOS)
+import UIKit
+#endif
 
 struct Desk: Identifiable, Hashable {
     let id: UUID
@@ -51,10 +54,56 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     @Published var isScanning: Bool = false
     @Published var isConnecting: Bool = false
     
+    #if os(iOS)
+    private var backgroundTimer: DispatchSourceTimer? = nil
+    private var backgroundObserver: NSObjectProtocol? = nil
+    private var foregroundObserver: NSObjectProtocol? = nil
+    #endif
+    
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: .main)
+        
+        #if os(iOS)
+        // Set a 10s timer when app goes to background to disconnect
+        backgroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] notification in
+            let timer = DispatchSource.makeTimerSource(queue: .main)
+            var taskID = UIBackgroundTaskIdentifier.invalid
+            taskID = UIApplication.shared.beginBackgroundTask(withName: "Bluetooth Timeout", expirationHandler: {
+                timer.cancel()
+                UIApplication.shared.endBackgroundTask(taskID)
+            })
+
+            timer.setEventHandler {
+                self?.stopDiscovery()
+                if let peripheral = self?.peripheral {
+                    self?.centralManager.cancelPeripheralConnection(peripheral)
+                }
+                UIApplication.shared.endBackgroundTask(taskID)
+            }
+            timer.schedule(deadline: .now() + .seconds(10))
+            timer.resume()
+            self?.backgroundTimer = timer
+        }
+        foregroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main, using: { [weak self] notification in
+            if let timer = self?.backgroundTimer {
+                timer.cancel()
+                self?.backgroundTimer = nil
+            }
+        })
+        #endif
     }
+    
+    #if os(iOS)
+    deinit {
+        if let bo = backgroundObserver {
+            NotificationCenter.default.removeObserver(bo)
+        }
+        if let fo = foregroundObserver {
+            NotificationCenter.default.removeObserver(fo)
+        }
+    }
+    #endif
     
     func connect(desk: Desk) {
         logger.info("Connecting to \(desk.name)")

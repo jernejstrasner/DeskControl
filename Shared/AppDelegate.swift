@@ -21,6 +21,9 @@ struct DeskControlApp: App {
             // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
             // We recommend adjusting this value in production.
             options.tracesSampleRate = 1.0
+            
+            // Enable profiling
+            options.profilesSampleRate = 1.0
         }
     }
     

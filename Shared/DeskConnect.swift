@@ -9,6 +9,7 @@
 import Foundation
 import CoreBluetooth
 import OSLog
+import Sentry
 
 struct Desk: Identifiable, Hashable {
     let id: UUID
@@ -182,6 +183,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if let value = characteristic.value, characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition {
+            let transaction = SentrySDK.startTransaction(name: "Update position", operation: "bluetooth")
             do {
                 let unpacked = try unpack("<Hh", value[..<4])
 
@@ -207,8 +209,11 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
                 } else if case .movingDown(.some(let target)) = status, currentPosition! <= target + stopFactor {
                     stopMoving()
                 }
+
+                transaction.finish()
             } catch let e {
                 logger.error("Error unpacking position: \(e)")
+                transaction.finish(status: .internalError)
             }
         }
     }

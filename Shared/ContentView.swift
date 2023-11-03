@@ -152,7 +152,18 @@ struct ContentView: View {
                         .fontWeight(.bold)
                         .padding([.leading, .trailing])
                         .padding([.top, .bottom], 4)
-                }.buttonStyle(.borderedProminent)
+                }
+                .buttonStyle(.borderedProminent)
+                #if os(macOS)
+                Button {
+                    NSApplication.shared.terminate(self)
+                } label: {
+                    Image(systemName: "power")
+                        .imageScale(.large)
+                        .foregroundColor(Color.secondary)
+                }
+                .buttonStyle(.borderless)
+                #endif
             }
             .padding()
             .onChange(of: deskConnect.centralState) { value in

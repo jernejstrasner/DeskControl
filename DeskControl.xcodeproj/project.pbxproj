@@ -253,7 +253,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\" # We need this if sentry-cli was installed via Homebrew\nif which sentry-cli >/dev/null; then\nexport SENTRY_ORG=jernej-dk\nexport SENTRY_PROJECT=nextjs\nexport SENTRY_AUTH_TOKEN=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\nERROR=$(sentry-cli debug-files upload --include-sources \"$DWARF_DSYM_FOLDER_PATH\" 2>&1 >/dev/null)\nif [ ! $? -eq 0 ]; then\necho \"warning: sentry-cli - $ERROR\"\nfi\nelse\necho \"warning: sentry-cli not installed, download from https://github.com/getsentry/sentry-cli/releases\"\nfi\n";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\" # We need this if sentry-cli was installed via Homebrew\nif which sentry-cli >/dev/null; then\nexport SENTRY_ORG=jernej-dk\nexport SENTRY_PROJECT=desk-control\nexport SENTRY_AUTH_TOKEN=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\nERROR=$(sentry-cli debug-files upload --include-sources \"$DWARF_DSYM_FOLDER_PATH\" 2>&1 >/dev/null)\nif [ ! $? -eq 0 ]; then\necho \"warning: sentry-cli - $ERROR\"\nfi\nelse\necho \"warning: sentry-cli not installed, download from https://github.com/getsentry/sentry-cli/releases\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

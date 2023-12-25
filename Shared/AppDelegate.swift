@@ -13,7 +13,7 @@ import Sentry
 struct DeskControlApp: App {
     init() {
         SentrySDK.start { options in
-            options.dsn = "https://673adb93f8a210dfc359aac8867c7960@o1146455.ingest.sentry.io/4506157598375936"
+            options.dsn = Constants.sentryDSN
             
             // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
             // We recommend adjusting this value in production.

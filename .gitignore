@@ -19,3 +19,5 @@ DerivedData/
 *.xccheckout
 *.moved-aside
 *.xcuserstate
+.env
+Constants.generated.swift

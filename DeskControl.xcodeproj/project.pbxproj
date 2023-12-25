@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		194B49272AF4DDF900AF0AF7 /* SentrySwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 194B49262AF4DDF900AF0AF7 /* SentrySwiftUI */; };
 		194B49292AF566D900AF0AF7 /* SentrySwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 194B49282AF566D900AF0AF7 /* SentrySwiftUI */; };
+		19943F1B2B39EAE70080A18C /* Constants.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19943F1A2B39EAE70080A18C /* Constants.generated.swift */; };
+		19943F1C2B39EAE70080A18C /* Constants.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19943F1A2B39EAE70080A18C /* Constants.generated.swift */; };
 		199609372AD7E323001B60B1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199609362AD7E323001B60B1 /* ContentView.swift */; };
 		199609392AD7E325001B60B1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 199609382AD7E325001B60B1 /* Assets.xcassets */; };
 		1996093C2AD7E325001B60B1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1996093B2AD7E325001B60B1 /* Preview Assets.xcassets */; };
@@ -29,6 +31,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		19943F142B38A13E0080A18C /* Constants.template.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.template.swift; sourceTree = "<group>"; };
+		19943F1A2B39EAE70080A18C /* Constants.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.generated.swift; sourceTree = "<group>"; };
 		199609322AD7E323001B60B1 /* DeskControliOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeskControliOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		199609362AD7E323001B60B1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		199609382AD7E325001B60B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -101,6 +105,8 @@
 		89BCA33B2472E51B009C815D = {
 			isa = PBXGroup;
 			children = (
+				19943F142B38A13E0080A18C /* Constants.template.swift */,
+				19943F1A2B39EAE70080A18C /* Constants.generated.swift */,
 				199609402AD7E33D001B60B1 /* Shared */,
 				89BCA3462472E51B009C815D /* DeskControl */,
 				199609332AD7E323001B60B1 /* DeskControliOS */,
@@ -142,6 +148,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1996093F2AD7E325001B60B1 /* Build configuration list for PBXNativeTarget "DeskControliOS" */;
 			buildPhases = (
+				19943F1D2B39EB750080A18C /* ShellScript */,
 				1996092E2AD7E323001B60B1 /* Sources */,
 				1996092F2AD7E323001B60B1 /* Frameworks */,
 				199609302AD7E323001B60B1 /* Resources */,
@@ -162,6 +169,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 89BCA36D2472E51C009C815D /* Build configuration list for PBXNativeTarget "DeskControl" */;
 			buildPhases = (
+				19943F172B39BCCF0080A18C /* Load constants */,
 				89BCA3402472E51B009C815D /* Sources */,
 				89BCA3412472E51B009C815D /* Frameworks */,
 				89BCA3422472E51B009C815D /* Resources */,
@@ -243,22 +251,66 @@
 		194B49252AF4D72D00AF0AF7 /* Upload symbols to Sentry */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
+			buildActionMask = 8;
 			files = (
 			);
 			inputFileListPaths = (
 			);
 			inputPaths = (
 				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+				"$(SRCROOT)/.env",
 			);
 			name = "Upload symbols to Sentry";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
+			runOnlyForDeploymentPostprocessing = 1;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\" # We need this if sentry-cli was installed via Homebrew\nif which sentry-cli >/dev/null; then\nset -a\nsource $SCRIPT_INPUT_FILE_1\nset +a\nERROR=$(sentry-cli debug-files upload --include-sources \"$DWARF_DSYM_FOLDER_PATH\" 2>&1 >/dev/null)\nif [ ! $? -eq 0 ]; then\necho \"warning: sentry-cli - $ERROR\"\nfi\nelse\necho \"warning: sentry-cli not installed, download from https://github.com/getsentry/sentry-cli/releases\"\nfi\n";
+		};
+		19943F172B39BCCF0080A18C /* Load constants */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.env",
+				"$(SRCROOT)/Constants.template.swift",
+			);
+			name = "Load constants";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Constants.generated.swift",
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\" # We need this if sentry-cli was installed via Homebrew\nif which sentry-cli >/dev/null; then\nexport SENTRY_ORG=jernej-dk\nexport SENTRY_PROJECT=desk-control\nexport SENTRY_AUTH_TOKEN=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\nERROR=$(sentry-cli debug-files upload --include-sources \"$DWARF_DSYM_FOLDER_PATH\" 2>&1 >/dev/null)\nif [ ! $? -eq 0 ]; then\necho \"warning: sentry-cli - $ERROR\"\nfi\nelse\necho \"warning: sentry-cli not installed, download from https://github.com/getsentry/sentry-cli/releases\"\nfi\n";
+			shellScript = "set -a\nsource $SCRIPT_INPUT_FILE_0\nset +a\n\nexport PATH=\"$PATH:/opt/homebrew/bin\"\ntouch $SCRIPT_OUTPUT_FILE_0\nenvsubst < $SCRIPT_INPUT_FILE_1 > $SCRIPT_OUTPUT_FILE_0\n";
+		};
+		19943F1D2B39EB750080A18C /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.env",
+				"$(SRCROOT)/Constants.template.swift",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Constants.generated.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -a\nsource $SCRIPT_INPUT_FILE_0\nset +a\n\nexport PATH=\"$PATH:/opt/homebrew/bin\"\ntouch $SCRIPT_OUTPUT_FILE_0\nenvsubst < $SCRIPT_INPUT_FILE_1 > $SCRIPT_OUTPUT_FILE_0\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -268,6 +320,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				19B2F5432AF28A4B007B674D /* AppDelegate.swift in Sources */,
+				19943F1C2B39EAE70080A18C /* Constants.generated.swift in Sources */,
 				199609412AD7E36D001B60B1 /* ParticlePeripheral.swift in Sources */,
 				199609432AD7E372001B60B1 /* BinUtils.swift in Sources */,
 				199609422AD7E36F001B60B1 /* DeskConnect.swift in Sources */,
@@ -287,6 +340,7 @@
 				892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */,
 				19B2F5412AF27D09007B674D /* PressButton.swift in Sources */,
 				19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */,
+				19943F1B2B39EAE70080A18C /* Constants.generated.swift in Sources */,
 				89BCA37F24730B27009C815D /* ParticlePeripheral.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		193B1AE02C08AB0B0063361C /* CustomOnAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = 193B1ADF2C08AB0B0063361C /* CustomOnAppear.swift */; };
 		194B49272AF4DDF900AF0AF7 /* SentrySwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 194B49262AF4DDF900AF0AF7 /* SentrySwiftUI */; };
 		194B49292AF566D900AF0AF7 /* SentrySwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 194B49282AF566D900AF0AF7 /* SentrySwiftUI */; };
 		19943F1B2B39EAE70080A18C /* Constants.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19943F1A2B39EAE70080A18C /* Constants.generated.swift */; };
@@ -31,6 +32,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		193B1ADF2C08AB0B0063361C /* CustomOnAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomOnAppear.swift; sourceTree = "<group>"; };
 		19943F142B38A13E0080A18C /* Constants.template.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.template.swift; sourceTree = "<group>"; };
 		19943F1A2B39EAE70080A18C /* Constants.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.generated.swift; sourceTree = "<group>"; };
 		199609322AD7E323001B60B1 /* DeskControliOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeskControliOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -98,6 +100,7 @@
 				89BCA37E24730B27009C815D /* ParticlePeripheral.swift */,
 				19B2F5402AF27D09007B674D /* PressButton.swift */,
 				89BCA3472472E51B009C815D /* AppDelegate.swift */,
+				193B1ADF2C08AB0B0063361C /* CustomOnAppear.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -338,6 +341,7 @@
 				19B2F53E2AEF9A77007B674D /* ContentView.swift in Sources */,
 				89BCA3482472E51B009C815D /* AppDelegate.swift in Sources */,
 				892FB916248AC2EA0055E2D1 /* DeskConnect.swift in Sources */,
+				193B1AE02C08AB0B0063361C /* CustomOnAppear.swift in Sources */,
 				19B2F5412AF27D09007B674D /* PressButton.swift in Sources */,
 				19E2D6562AED19DA00F3EFEE /* Formatting.swift in Sources */,
 				19943F1B2B39EAE70080A18C /* Constants.generated.swift in Sources */,

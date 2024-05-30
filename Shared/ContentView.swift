@@ -210,6 +210,22 @@ struct ContentView: View {
                 }
                 selectedDesk = desk
             }
+            #if os(macOS)
+            .onAppearanceEvent(onAppear: {
+                deskConnect.didEnterForeground()
+                if deskConnect.centralState == .poweredOn, deskConnect.isConnecting == false, deskConnect.isScanning == false, deskConnect.connectedDesk == nil {
+                    // If we have saved desk try to connect to it straight away
+                    if let deskString = UserDefaults.standard.string(forKey: "last-desk"), let desk = Desk(rawValue: deskString) {
+                        selectedDesk = desk
+                    } else {
+                        // Start discovery of new desks
+                        deskConnect.startDiscovery()
+                    }
+                }
+            }, onDisappear: {
+                deskConnect.didEnterBackground()
+            })
+            #endif
         }
     }
 }

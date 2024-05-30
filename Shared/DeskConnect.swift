@@ -54,8 +54,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     @Published var isScanning: Bool = false
     @Published var isConnecting: Bool = false
     
-    #if os(iOS)
     private var backgroundTimer: DispatchSourceTimer? = nil
+#if os(iOS)
     private var backgroundObserver: NSObjectProtocol? = nil
     private var foregroundObserver: NSObjectProtocol? = nil
     #endif
@@ -94,13 +94,36 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         #endif
     }
     
-    #if os(iOS)
     deinit {
+        #if os(iOS)
         if let bo = backgroundObserver {
             NotificationCenter.default.removeObserver(bo)
         }
         if let fo = foregroundObserver {
             NotificationCenter.default.removeObserver(fo)
+        }
+        #endif
+        backgroundTimer?.cancel()
+    }
+    
+    #if os(macOS)
+    func didEnterBackground() {
+        let timer = DispatchSource.makeTimerSource(queue: .main)
+        timer.setEventHandler { [weak self] in
+            self?.stopDiscovery()
+            if let peripheral = self?.peripheral {
+                self?.centralManager.cancelPeripheralConnection(peripheral)
+            }
+        }
+        timer.schedule(deadline: .now() + .seconds(10))
+        timer.resume()
+        backgroundTimer = timer
+    }
+    
+    func didEnterForeground() {
+        if let timer = self.backgroundTimer {
+            timer.cancel()
+            self.backgroundTimer = nil
         }
     }
     #endif

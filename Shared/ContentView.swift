@@ -8,6 +8,10 @@
 
 import SwiftUI
 import SentrySwiftUI
+#if os(macOS)
+import ServiceManagement
+import os.log
+#endif
 
 struct ContentView: View {
     
@@ -15,9 +19,13 @@ struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     #endif
 
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ContentView")
     @StateObject var deskConnect = DeskConnect()
 
     @State private var selectedDesk: Desk?
+    #if os(macOS)
+    @State private var launchAtLogin: Bool = SMAppService.mainApp.status == .enabled
+    #endif
     @AppStorage("sit-position") private var sitPosition: Int?
     @AppStorage("stand-position") private var standPosition: Int?
     
@@ -159,6 +167,20 @@ struct ContentView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 #if os(macOS)
+                Divider()
+                Toggle("Launch on login", isOn: $launchAtLogin)
+                    .disabled(SMAppService.mainApp.status == .requiresApproval)
+                if SMAppService.mainApp.status == .requiresApproval {
+                    Text("Please go to System Preferences and allow running as a login item")
+                        .font(.footnote)
+                        .multilineTextAlignment(.center)
+                    Button {
+                        SMAppService.openSystemSettingsLoginItems()
+                    } label: {
+                        Text("Open System Preferences")
+                        Image(systemName: "gear")
+                    }
+                }
                 Button {
                     NSApplication.shared.terminate(self)
                 } label: {
@@ -211,6 +233,18 @@ struct ContentView: View {
                 selectedDesk = desk
             }
             #if os(macOS)
+            .onChange(of: launchAtLogin) { value in
+                let bundleId = Bundle.main.bundleIdentifier!
+                do {
+                    if value {
+                        try SMAppService.mainApp.register()
+                    } else {
+                        try SMAppService.mainApp.unregister()
+                    }
+                } catch {
+                    logger.log(level: .error, "Failed to configure login item")
+                }
+            }
             .onAppearanceEvent(onAppear: {
                 deskConnect.didEnterForeground()
                 if deskConnect.centralState == .poweredOn, deskConnect.isConnecting == false, deskConnect.isScanning == false, deskConnect.connectedDesk == nil {

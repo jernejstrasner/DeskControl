@@ -297,6 +297,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     }
     
     func stopMoving() {
+        if isScanning || isConnecting { return }
         moveTimer?.cancel()
         moveTimer = nil
         status = .idle

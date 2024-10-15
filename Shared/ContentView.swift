@@ -8,9 +8,9 @@
 
 import SwiftUI
 import SentrySwiftUI
+import os.log
 #if os(macOS)
 import ServiceManagement
-import os.log
 #endif
 
 struct ContentView: View {

@@ -70,7 +70,6 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         // Set a 10s timer when app goes to background to disconnect
         backgroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] notification in
             let timer = DispatchSource.makeTimerSource(queue: .main)
-//            var taskID = UIBackgroundTaskIdentifier.invalid
             self?.taskID = UIApplication.shared.beginBackgroundTask(withName: "Bluetooth Timeout", expirationHandler: { [weak self] in
                 timer.cancel()
                 if let tid = self?.taskID {

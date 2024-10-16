@@ -238,7 +238,6 @@ struct ContentView: View {
             }
             #if os(macOS)
             .onChange(of: launchAtLogin) { value in
-                let bundleId = Bundle.main.bundleIdentifier!
                 do {
                     if value {
                         try SMAppService.mainApp.register()

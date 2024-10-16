@@ -34,18 +34,18 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     private var peripheral: CBPeripheral?
     private var characteristicPosition: CBCharacteristic!
     private var characteristicControl: CBCharacteristic!
-    
+
     private var moveTimer: DispatchSourceTimer? = nil
-    
+
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DeskConnect")
-    
+
     private enum Status {
         case idle
         case movingUp(Int?)
         case movingDown(Int?)
     }
     private var status = Status.idle
-    
+
     @Published var centralState: CBManagerState = .unknown
     @Published var discoveredDesks: Set<Desk> = []
     @Published var currentPosition: Int? = nil
@@ -53,33 +53,41 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     @Published var connectedDesk: Desk? = nil
     @Published var isScanning: Bool = false
     @Published var isConnecting: Bool = false
-    
+
     private var backgroundTimer: DispatchSourceTimer? = nil
-#if os(iOS)
+    #if os(iOS)
     private var backgroundObserver: NSObjectProtocol? = nil
     private var foregroundObserver: NSObjectProtocol? = nil
     #endif
     
+    private var taskID = UIBackgroundTaskIdentifier.invalid
+
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: .main)
-        
+
         #if os(iOS)
         // Set a 10s timer when app goes to background to disconnect
         backgroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] notification in
             let timer = DispatchSource.makeTimerSource(queue: .main)
-            var taskID = UIBackgroundTaskIdentifier.invalid
-            taskID = UIApplication.shared.beginBackgroundTask(withName: "Bluetooth Timeout", expirationHandler: {
+//            var taskID = UIBackgroundTaskIdentifier.invalid
+            self?.taskID = UIApplication.shared.beginBackgroundTask(withName: "Bluetooth Timeout", expirationHandler: { [weak self] in
                 timer.cancel()
-                UIApplication.shared.endBackgroundTask(taskID)
+                if let tid = self?.taskID {
+                    UIApplication.shared.endBackgroundTask(tid)
+                    self?.taskID = .invalid
+                }
             })
 
-            timer.setEventHandler {
+            timer.setEventHandler { [weak self] in
                 self?.stopDiscovery()
                 if let peripheral = self?.peripheral {
                     self?.centralManager.cancelPeripheralConnection(peripheral)
                 }
-                UIApplication.shared.endBackgroundTask(taskID)
+                if let tid = self?.taskID {
+                    UIApplication.shared.endBackgroundTask(tid)
+                    self?.taskID = .invalid
+                }
             }
             timer.schedule(deadline: .now() + .seconds(10))
             timer.resume()
@@ -93,7 +101,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         })
         #endif
     }
-    
+
     deinit {
         #if os(iOS)
         if let bo = backgroundObserver {
@@ -105,7 +113,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         #endif
         backgroundTimer?.cancel()
     }
-    
+
     #if os(macOS)
     func didEnterBackground() {
         let timer = DispatchSource.makeTimerSource(queue: .main)
@@ -119,7 +127,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         timer.resume()
         backgroundTimer = timer
     }
-    
+
     func didEnterForeground() {
         if let timer = self.backgroundTimer {
             timer.cancel()
@@ -127,7 +135,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         }
     }
     #endif
-    
+
     func connect(desk: Desk) {
         logger.info("Connecting to \(desk.name)")
         if let peripheral = self.peripheral {
@@ -144,16 +152,16 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         isConnecting = true
         self.centralManager.connect(peripheral)
     }
-    
+
     func stopConnecting() {
         if let peripheral = self.peripheral {
             logger.info("Disconnecting \(peripheral.name ?? "unknown")")
             centralManager.cancelPeripheralConnection(peripheral)
         }
     }
-    
+
     private var discoveryHandle: DispatchWorkItem? = nil
-    
+
     func startDiscovery(timeout: DispatchTimeInterval = .seconds(15)) {
         if isScanning {
             return
@@ -166,22 +174,22 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + timeout, execute: discoveryHandle!)
     }
-    
+
     func stopDiscovery() {
         discoveryHandle?.cancel()
         centralManager.stopScan()
         isScanning = false
     }
-    
+
     /// Bluetooth module state updates
-     
+
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         centralState = central.state
         if central.state != .poweredOn {
             logger.error("Bluetooth not powered on: \(String(describing: central.state))")
         }
     }
-    
+
     /// Peripheral discovery
 
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
@@ -189,9 +197,9 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             self.discoveredDesks.insert(desk)
         }
     }
-    
+
     /// Peripheral connection
-    
+
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         logger.info("Connected to \(peripheral.name!)")
         self.isConnecting = false
@@ -202,13 +210,13 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             logger.error("Invalid desk connected. Not a desk?")
         }
     }
-    
+
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         logger.error("Failed to connect to \(peripheral.name!)")
         self.peripheral = nil
         self.isConnecting = false
     }
-    
+
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         logger.info("Disconnected \(peripheral.name!)")
         self.peripheral = nil
@@ -216,7 +224,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         self.connectedDesk = nil
         self.isConnecting = false
     }
-    
+
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, timestamp: CFAbsoluteTime, isReconnecting: Bool, error: Error?) {
         logger.info("Disconnected \(peripheral.name!). Reconnecting: \(isReconnecting)")
         self.peripheral = nil
@@ -234,7 +242,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             }
         }
     }
-    
+
     /// Peripheral characteristics
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
@@ -242,7 +250,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             for characteristic in characteristics {
                 peripheral.readValue(for: characteristic)
                 peripheral.setNotifyValue(true, for: characteristic)
-         
+
                 if (characteristic.uuid == DeskServices.controlCharacteristic) {
                     self.characteristicControl = characteristic
                 }
@@ -253,9 +261,9 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             }
         }
     }
-    
+
     /// Peripheral value updates
-    
+
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if let value = characteristic.value, characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition {
             let transaction = SentrySDK.startTransaction(name: "Update position", operation: "bluetooth")
@@ -264,10 +272,10 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
 
                 let position = unpacked[0] as! Int
                 currentPosition = DeskServices.baseHeight + position
-                
+
                 let speed = unpacked[1] as! Int
                 currentSpeed = speed
-                
+
                 // Check if safety stop was triggered by the desk
                 switch self.status {
                 case .movingUp(_) where speed == 0, .movingDown(_) where speed == 0:
@@ -275,7 +283,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
                 default:
                     break
                 }
-                
+
                 // If we're moving to target then check if we need to stop here
                 // Take speed into account so we don't overshoot
                 let stopFactor = abs(currentSpeed) / 100
@@ -292,13 +300,13 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             }
         }
     }
-    
+
     /// Peripheral commands
-    
+
     func wakeUp() {
         self.peripheral?.writeValue(DeskServices.valueWakeUp, for: self.characteristicControl, type: .withResponse)
     }
-    
+
     func stopMoving() {
         if isScanning || isConnecting { return }
         moveTimer?.cancel()
@@ -306,20 +314,20 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         status = .idle
         self.peripheral?.writeValue(DeskServices.valueStopMove, for: self.characteristicControl, type: .withResponse)
     }
-    
+
     enum Direction {
         case up, down
     }
-    
+
     func move(_ direction: Direction, continuously: Bool = false) {
         // If we haven't fetched the current position yet then make it a no-op
         if currentPosition == nil {
             return
         }
-        
+
         // If we're currently moving stop it
         stopMoving()
-        
+
         // Set state
         let command: Data
         switch direction {
@@ -330,7 +338,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             status = .movingDown(nil)
             command = DeskServices.valueMoveDown
         }
-        
+
         if continuously {
             let timer = DispatchSource.makeTimerSource()
             timer.setEventHandler { [weak self] in
@@ -356,10 +364,10 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         guard let currentPosition = self.currentPosition, currentPosition != position else {
             return
         }
-        
+
         // Stop in case we're moving
         stopMoving()
-        
+
         // Determine direction
         let direction: Direction = position > currentPosition ? .up : .down
         let command: Data
@@ -383,7 +391,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         timer.resume()
         moveTimer = timer
     }
-    
+
 }
 
 extension Desk: RawRepresentable {
@@ -395,7 +403,7 @@ extension Desk: RawRepresentable {
         self.id = id
         self.name = String(parts[1])
     }
-    
+
     var rawValue: String {
         "\(id.uuidString)|\(name)"
     }

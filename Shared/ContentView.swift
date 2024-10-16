@@ -55,6 +55,10 @@ struct ContentView: View {
 #endif
                             Text("Cancel")
                         }
+                    } else if deskConnect.isConnecting {
+                        Button("Cancel") {
+                            deskConnect.stopConnecting()
+                        }
                     } else {
                         Button("Scan") {
                             deskConnect.startDiscovery()

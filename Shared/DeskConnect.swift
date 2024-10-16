@@ -145,6 +145,13 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         self.centralManager.connect(peripheral)
     }
     
+    func stopConnecting() {
+        if let peripheral = self.peripheral {
+            logger.info("Disconnecting \(peripheral.name ?? "unknown")")
+            centralManager.cancelPeripheralConnection(peripheral)
+        }
+    }
+    
     private var discoveryHandle: DispatchWorkItem? = nil
     
     func startDiscovery(timeout: DispatchTimeInterval = .seconds(15)) {
@@ -152,12 +159,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             return
         }
         isScanning = true
-        #if DEBUG
-        centralManager.scanForPeripherals(withServices: nil)
-        #else
         // This only works for devices that are actively advertising the service aka. pairing mode
         centralManager.scanForPeripherals(withServices: [DeskServices.control, DeskServices.referenceOutput])
-        #endif
         discoveryHandle = DispatchWorkItem { [weak self] in
             self?.stopDiscovery()
         }

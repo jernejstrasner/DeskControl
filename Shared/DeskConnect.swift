@@ -58,10 +58,9 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     #if os(iOS)
     private var backgroundObserver: NSObjectProtocol? = nil
     private var foregroundObserver: NSObjectProtocol? = nil
+    private var taskID = UIBackgroundTaskIdentifier.invalid
     #endif
     
-    private var taskID = UIBackgroundTaskIdentifier.invalid
-
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: .main)

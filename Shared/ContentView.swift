@@ -84,11 +84,20 @@ struct ContentView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "exclamationmark.triangle.fill")
                         Text(error)
+                        Spacer()
+                        Button {
+                            withAnimation {
+                                deskConnect.errorMessage = nil
+                            }
+                        } label: {
+                            Image(systemName: "xmark")
+                                .imageScale(.small)
+                        }
+                        .buttonStyle(.borderless)
                     }
                     .font(.callout)
                     .foregroundStyle(.red)
                     .transition(.opacity)
-                    .animation(.easeInOut, value: deskConnect.errorMessage)
                 }
                 Divider()
                     .padding(.bottom, 20)
@@ -206,6 +215,7 @@ struct ContentView: View {
                 #endif
             }
             .padding()
+            .animation(.easeInOut(duration: 0.2), value: deskConnect.errorMessage)
             #if os(iOS)
             .onChange(of: scenePhase) { newPhase in
                 if newPhase == .active, deskConnect.centralState == .poweredOn, deskConnect.isConnecting == false, deskConnect.isScanning == false, deskConnect.connectedDesk == nil {

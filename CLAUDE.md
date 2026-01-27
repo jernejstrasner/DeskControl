@@ -40,6 +40,65 @@ The desk communicates via two BLE services: a control service (write commands) a
 
 Only external dependency is **Sentry** (sentry-cocoa via SPM) for crash/error reporting. Sentry DSN is injected at build time via `Constants.template.swift` → `Constants.generated.swift`.
 
+## macOS Release Build (Signed & Notarized)
+
+To produce a notarized `.dmg` for GitHub distribution:
+
+```bash
+# 1. Archive with Developer ID signing
+xcodebuild archive -scheme "DeskControl" -archivePath /tmp/DeskControl.xcarchive \
+  CODE_SIGN_IDENTITY="Developer ID Application: Jernej Strasner (286DN3SPR7)" \
+  DEVELOPMENT_TEAM=286DN3SPR7 CODE_SIGN_STYLE=Manual
+
+# 2. Create ExportOptions.plist
+cat > /tmp/ExportOptions.plist << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>developer-id</string>
+    <key>teamID</key>
+    <string>286DN3SPR7</string>
+</dict>
+</plist>
+EOF
+
+# 3. Export to .app
+xcodebuild -exportArchive -archivePath /tmp/DeskControl.xcarchive \
+  -exportPath /tmp/DeskControlExport -exportOptionsPlist /tmp/ExportOptions.plist
+
+# 4. Create DMG
+hdiutil create -volname "DeskControl" -srcfolder /tmp/DeskControlExport/DeskControl.app \
+  -ov -format UDZO /tmp/DeskControl.dmg
+
+# 5. Notarize (uses keychain profile "DeskControl-notary" stored via `xcrun notarytool store-credentials`)
+xcrun notarytool submit /tmp/DeskControl.dmg --keychain-profile "DeskControl-notary" --wait
+
+# 6. Staple
+xcrun stapler staple /tmp/DeskControl.dmg
+
+# 7. Upload to GitHub release
+gh release upload <tag> /tmp/DeskControl.dmg --clobber
+```
+
+### Notarization credentials
+
+Credentials are stored in the local keychain under profile `DeskControl-notary`. To set up on a new machine:
+```bash
+xcrun notarytool store-credentials "DeskControl-notary" --team-id "286DN3SPR7"
+```
+This prompts for Apple ID and an app-specific password (generated at appleid.apple.com).
+
+### Signing identity
+
+- **Developer ID Application: Jernej Strasner (286DN3SPR7)** — required for notarization
+- Certificate must be in the keychain; create via Xcode > Settings > Accounts > Manage Certificates
+
+### CI automation
+
+A plan for a GitHub Actions workflow to automate this on release creation is saved at `~/.claude/plans/fizzy-snacking-shannon.md`.
+
 ## Code Style
 
 - When adding comments, be concise and focus on the why, not what

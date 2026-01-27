@@ -54,6 +54,9 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     @Published var isScanning: Bool = false
     @Published var isConnecting: Bool = false
 
+    /// When true, automatically re-issue a connect after unexpected disconnection
+    private var shouldAutoReconnect = false
+
     private var backgroundTimer: DispatchSourceTimer? = nil
     #if os(iOS)
     private var backgroundObserver: NSObjectProtocol? = nil
@@ -78,6 +81,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             })
 
             timer.setEventHandler { [weak self] in
+                self?.shouldAutoReconnect = false
                 self?.stopDiscovery()
                 if let peripheral = self?.peripheral {
                     self?.centralManager.cancelPeripheralConnection(peripheral)
@@ -112,30 +116,10 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         backgroundTimer?.cancel()
     }
 
-    #if os(macOS)
-    func didEnterBackground() {
-        let timer = DispatchSource.makeTimerSource(queue: .main)
-        timer.setEventHandler { [weak self] in
-            self?.stopDiscovery()
-            if let peripheral = self?.peripheral {
-                self?.centralManager.cancelPeripheralConnection(peripheral)
-            }
-        }
-        timer.schedule(deadline: .now() + .seconds(10))
-        timer.resume()
-        backgroundTimer = timer
-    }
-
-    func didEnterForeground() {
-        if let timer = self.backgroundTimer {
-            timer.cancel()
-            self.backgroundTimer = nil
-        }
-    }
-    #endif
 
     func connect(desk: Desk) {
         logger.info("Connecting to \(desk.name)")
+        shouldAutoReconnect = false
         if let peripheral = self.peripheral {
             centralManager.cancelPeripheralConnection(peripheral)
         }
@@ -148,10 +132,12 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         self.peripheral = peripheral
         self.peripheral!.delegate = self
         isConnecting = true
+        shouldAutoReconnect = true
         self.centralManager.connect(peripheral)
     }
 
     func stopConnecting() {
+        shouldAutoReconnect = false
         if let peripheral = self.peripheral {
             logger.info("Disconnecting \(peripheral.name ?? "unknown")")
             centralManager.cancelPeripheralConnection(peripheral)
@@ -185,6 +171,12 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         centralState = central.state
         if central.state != .poweredOn {
             logger.error("Bluetooth not powered on: \(String(describing: central.state))")
+            // Clear stale references — peripheral objects become invalid when BT powers off.
+            // ContentView's onChange(of: centralState) will reconnect when BT comes back.
+            self.peripheral = nil
+            self.currentPosition = nil
+            self.connectedDesk = nil
+            self.isConnecting = false
         }
     }
 
@@ -213,22 +205,49 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         logger.error("Failed to connect to \(peripheral.name!)")
         self.peripheral = nil
         self.isConnecting = false
+        self.shouldAutoReconnect = false
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        // Ignore stale disconnects (e.g. old peripheral when switching desks)
+        guard peripheral.identifier == self.peripheral?.identifier else { return }
+
         logger.info("Disconnected \(peripheral.name!)")
-        self.peripheral = nil
         self.currentPosition = nil
         self.connectedDesk = nil
         self.isConnecting = false
+
+        if shouldAutoReconnect && central.state == .poweredOn {
+            // Pend a reconnect — CoreBluetooth will connect when the peripheral is available
+            peripheral.delegate = self
+            self.peripheral = peripheral
+            centralManager.connect(peripheral)
+        } else {
+            self.peripheral = nil
+        }
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, timestamp: CFAbsoluteTime, isReconnecting: Bool, error: Error?) {
+        // Ignore stale disconnects (e.g. old peripheral when switching desks)
+        guard peripheral.identifier == self.peripheral?.identifier else { return }
+
         logger.info("Disconnected \(peripheral.name!). Reconnecting: \(isReconnecting)")
-        self.peripheral = nil
         self.currentPosition = nil
         self.connectedDesk = nil
         self.isConnecting = false
+
+        if isReconnecting {
+            // System is handling reconnection, keep peripheral reference
+            return
+        }
+
+        if shouldAutoReconnect && central.state == .poweredOn {
+            peripheral.delegate = self
+            self.peripheral = peripheral
+            centralManager.connect(peripheral)
+        } else {
+            self.peripheral = nil
+        }
     }
 
     /// Peripheral services

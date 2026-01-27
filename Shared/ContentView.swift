@@ -80,6 +80,16 @@ struct ContentView: View {
                     Text("Not connected")
                         .foregroundStyle(.secondary)
                 }
+                if let error = deskConnect.errorMessage {
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                        Text(error)
+                    }
+                    .font(.callout)
+                    .foregroundStyle(.red)
+                    .transition(.opacity)
+                    .animation(.easeInOut, value: deskConnect.errorMessage)
+                }
                 Divider()
                     .padding(.bottom, 20)
                 PressButton(action: { pressed in

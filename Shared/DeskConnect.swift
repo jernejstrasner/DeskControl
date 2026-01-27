@@ -53,9 +53,21 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     @Published var connectedDesk: Desk? = nil
     @Published var isScanning: Bool = false
     @Published var isConnecting: Bool = false
+    @Published var errorMessage: String? = nil
 
     /// When true, automatically re-issue a connect after unexpected disconnection
     private var shouldAutoReconnect = false
+    private var errorDismissWork: DispatchWorkItem? = nil
+
+    private func showError(_ message: String) {
+        errorDismissWork?.cancel()
+        errorMessage = message
+        let work = DispatchWorkItem { [weak self] in
+            self?.errorMessage = nil
+        }
+        errorDismissWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5, execute: work)
+    }
 
     private var backgroundTimer: DispatchSourceTimer? = nil
     #if os(iOS)
@@ -127,6 +139,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         let peripherals = self.centralManager.retrievePeripherals(withIdentifiers: [desk.id])
         guard let peripheral = peripherals.first else {
             logger.error("Can't find desk \(desk.name)")
+            isConnecting = false
+            showError("Desk not found. Try scanning again")
             return
         }
         self.peripheral = peripheral
@@ -154,6 +168,9 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         // This only works for devices that are actively advertising the service aka. pairing mode
         centralManager.scanForPeripherals(withServices: [DeskServices.control, DeskServices.referenceOutput])
         discoveryHandle = DispatchWorkItem { [weak self] in
+            if self?.discoveredDesks.isEmpty == true {
+                self?.showError("No desks found nearby")
+            }
             self?.stopDiscovery()
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + timeout, execute: discoveryHandle!)
@@ -177,6 +194,17 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             self.currentPosition = nil
             self.connectedDesk = nil
             self.isConnecting = false
+
+            switch central.state {
+            case .poweredOff:
+                showError("Bluetooth is turned off")
+            case .unauthorized:
+                showError("Bluetooth permission denied")
+            case .unsupported:
+                showError("Bluetooth is not supported on this device")
+            default:
+                break
+            }
         }
     }
 
@@ -206,6 +234,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         self.peripheral = nil
         self.isConnecting = false
         self.shouldAutoReconnect = false
+        showError("Failed to connect to \(peripheral.name ?? "desk")")
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {

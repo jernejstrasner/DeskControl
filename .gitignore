@@ -1,17 +1,10 @@
 # Xcode
 .DS_Store
 xcuserdata/
-*.xcworkspace/
-*.xcuserdatad/
-project.xcworkspace/
 DerivedData/
 *.hmap
 *.ipa
 *.xcarchive
-*.xcodeproj/xcuserdata/
-*.xcodeproj/project.xcworkspace/xcuserdata/
-*.xcodeproj/xcuserdata/*/xcuserdatad/
-*.xcodeproj/project.xcworkspace/xcuserdata/*/xcuserdatad/
 *.pbxuser
 *.mode1v3
 *.mode2v3
@@ -19,5 +12,7 @@ DerivedData/
 *.xccheckout
 *.moved-aside
 *.xcuserstate
+
+# Secrets
 .env
 Constants.generated.swift

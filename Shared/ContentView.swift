@@ -215,6 +215,11 @@ struct ContentView: View {
                 #endif
             }
             .padding()
+            #if os(macOS)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.regularMaterial)
+            .ignoresSafeArea()
+            #endif
             .animation(.easeInOut(duration: 0.2), value: deskConnect.errorMessage)
             #if os(iOS)
             .onChange(of: scenePhase) { newPhase in

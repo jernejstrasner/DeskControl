@@ -32,8 +32,8 @@ extension Desk {
 class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, ObservableObject {
     private var centralManager: CBCentralManager!
     private var peripheral: CBPeripheral?
-    private var characteristicPosition: CBCharacteristic!
-    private var characteristicControl: CBCharacteristic!
+    private var characteristicPosition: CBCharacteristic?
+    private var characteristicControl: CBCharacteristic?
 
     private var moveTimer: DispatchSourceTimer? = nil
 
@@ -151,7 +151,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
             return
         }
         self.peripheral = peripheral
-        self.peripheral!.delegate = self
+        peripheral.delegate = self
         isConnecting = true
         shouldAutoReconnect = true
         self.centralManager.connect(peripheral)
@@ -229,19 +229,13 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     /// Peripheral connection
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        logger.info("Connected to \(peripheral.name!)")
-        self.isConnecting = false
+        logger.info("Connected to \(peripheral.name ?? "unknown")")
         self.errorMessage = nil
-        if let desk = Desk(peripheral: peripheral) {
-            self.connectedDesk = desk
-            peripheral.discoverServices([DeskServices.control, DeskServices.referenceOutput])
-        } else {
-            logger.error("Invalid desk connected. Not a desk?")
-        }
+        peripheral.discoverServices([DeskServices.control, DeskServices.referenceOutput])
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        logger.error("Failed to connect to \(peripheral.name!)")
+        logger.error("Failed to connect to \(peripheral.name ?? "unknown")")
         self.peripheral = nil
         self.isConnecting = false
         self.shouldAutoReconnect = false
@@ -252,9 +246,11 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         // Ignore stale disconnects (e.g. old peripheral when switching desks)
         guard peripheral.identifier == self.peripheral?.identifier else { return }
 
-        logger.info("Disconnected \(peripheral.name!)")
+        logger.info("Disconnected \(peripheral.name ?? "unknown")")
         self.currentPosition = nil
         self.connectedDesk = nil
+        self.characteristicControl = nil
+        self.characteristicPosition = nil
         self.isConnecting = false
 
         if shouldAutoReconnect && central.state == .poweredOn {
@@ -271,9 +267,11 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         // Ignore stale disconnects (e.g. old peripheral when switching desks)
         guard peripheral.identifier == self.peripheral?.identifier else { return }
 
-        logger.info("Disconnected \(peripheral.name!). Reconnecting: \(isReconnecting)")
+        logger.info("Disconnected \(peripheral.name ?? "unknown"). Reconnecting: \(isReconnecting)")
         self.currentPosition = nil
         self.connectedDesk = nil
+        self.characteristicControl = nil
+        self.characteristicPosition = nil
         self.isConnecting = false
 
         if isReconnecting {
@@ -315,6 +313,14 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
                 if (characteristic.uuid == DeskServices.referenceOutputCharacteristicPosition) {
                     self.characteristicPosition = characteristic
                 }
+            }
+        }
+
+        // Only mark as connected once we have both characteristics ready
+        if self.characteristicControl != nil, self.characteristicPosition != nil, self.connectedDesk == nil {
+            self.isConnecting = false
+            if let desk = Desk(peripheral: peripheral) {
+                self.connectedDesk = desk
             }
         }
     }
@@ -361,7 +367,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     /// Peripheral commands
 
     func wakeUp() {
-        self.peripheral?.writeValue(DeskServices.valueWakeUp, for: self.characteristicControl, type: .withResponse)
+        guard let characteristicControl else { return }
+        self.peripheral?.writeValue(DeskServices.valueWakeUp, for: characteristicControl, type: .withResponse)
     }
 
     func stopMoving() {
@@ -369,7 +376,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         moveTimer?.cancel()
         moveTimer = nil
         status = .idle
-        self.peripheral?.writeValue(DeskServices.valueStopMove, for: self.characteristicControl, type: .withResponse)
+        guard let characteristicControl else { return }
+        self.peripheral?.writeValue(DeskServices.valueStopMove, for: characteristicControl, type: .withResponse)
     }
 
     enum Direction {
@@ -377,10 +385,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     }
 
     func move(_ direction: Direction, continuously: Bool = false) {
-        // If we haven't fetched the current position yet then make it a no-op
-        if currentPosition == nil {
-            return
-        }
+        guard currentPosition != nil, let characteristicControl else { return }
 
         // If we're currently moving stop it
         stopMoving()
@@ -399,15 +404,14 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         if continuously {
             let timer = DispatchSource.makeTimerSource()
             timer.setEventHandler { [weak self] in
-                if let self = self {
-                    self.peripheral?.writeValue(command, for: self.characteristicControl, type: .withoutResponse)
-                }
+                guard let self, let ctl = self.characteristicControl else { return }
+                self.peripheral?.writeValue(command, for: ctl, type: .withoutResponse)
             }
             timer.schedule(deadline: .now(), repeating: .milliseconds(700))
             timer.resume()
             moveTimer = timer
         } else {
-            self.peripheral?.writeValue(command, for: self.characteristicControl, type: .withoutResponse)
+            self.peripheral?.writeValue(command, for: characteristicControl, type: .withoutResponse)
         }
     }
 
@@ -416,11 +420,9 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
      The desk controller does not have direct support for moving to a specific position continously.
      */
     func move(to position: Int) {
-        // If we don't have a current position yet or we are trying to move to same position
-        // TODO: Approximate comparison, we'll never been completely precise here
-        guard let currentPosition = self.currentPosition, currentPosition != position else {
-            return
-        }
+        // TODO: Approximate comparison, we'll never be completely precise here
+        guard let currentPosition = self.currentPosition, currentPosition != position,
+              self.characteristicControl != nil else { return }
 
         // Stop in case we're moving
         stopMoving()
@@ -440,9 +442,8 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         // Initiate the timer loop
         let timer = DispatchSource.makeTimerSource()
         timer.setEventHandler { [weak self] in
-            if let self = self {
-                self.peripheral?.writeValue(command, for: self.characteristicControl, type: .withoutResponse)
-            }
+            guard let self, let ctl = self.characteristicControl else { return }
+            self.peripheral?.writeValue(command, for: ctl, type: .withoutResponse)
         }
         timer.schedule(deadline: .now(), repeating: .milliseconds(700))
         timer.resume()

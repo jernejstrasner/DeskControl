@@ -63,13 +63,27 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     private var backgroundObserver: NSObjectProtocol? = nil
     private var foregroundObserver: NSObjectProtocol? = nil
     private var taskID = UIBackgroundTaskIdentifier.invalid
+    #elseif os(macOS)
+    private var wakeObserver: NSObjectProtocol? = nil
     #endif
     
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: .main)
 
-        #if os(iOS)
+        #if os(macOS)
+        // Reconnect after macOS wakes from sleep — CoreBluetooth can silently
+        // drop pending connects during sleep without reporting a state change.
+        wakeObserver = NotificationCenter.default.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
+            guard let self = self else { return }
+            guard self.shouldAutoReconnect,
+                  self.centralManager.state == .poweredOn,
+                  self.connectedDesk == nil,
+                  let peripheral = self.peripheral else { return }
+            self.logger.info("Reconnecting after wake")
+            self.centralManager.connect(peripheral)
+        }
+        #elseif os(iOS)
         // Set a 10s timer when app goes to background to disconnect
         backgroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] notification in
             let timer = DispatchSource.makeTimerSource(queue: .main)
@@ -106,7 +120,11 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     }
 
     deinit {
-        #if os(iOS)
+        #if os(macOS)
+        if let wo = wakeObserver {
+            NotificationCenter.default.removeObserver(wo)
+        }
+        #elseif os(iOS)
         if let bo = backgroundObserver {
             NotificationCenter.default.removeObserver(bo)
         }

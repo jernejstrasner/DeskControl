@@ -74,7 +74,9 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
         #if os(macOS)
         // Reconnect after macOS wakes from sleep — CoreBluetooth can silently
         // drop pending connects during sleep without reporting a state change.
-        wakeObserver = NotificationCenter.default.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
+        // NSWorkspace notifications are posted on NSWorkspace.shared.notificationCenter,
+        // not the default center.
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             guard let self = self else { return }
             guard self.shouldAutoReconnect,
                   self.centralManager.state == .poweredOn,
@@ -122,7 +124,7 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
     deinit {
         #if os(macOS)
         if let wo = wakeObserver {
-            NotificationCenter.default.removeObserver(wo)
+            NSWorkspace.shared.notificationCenter.removeObserver(wo)
         }
         #elseif os(iOS)
         if let bo = backgroundObserver {

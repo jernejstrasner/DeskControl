@@ -422,8 +422,10 @@ class DeskConnect: NSObject, CBPeripheralDelegate, CBCentralManagerDelegate, Obs
      The desk controller does not have direct support for moving to a specific position continously.
      */
     func move(to position: Int) {
-        // TODO: Approximate comparison, we'll never be completely precise here
-        guard let currentPosition = self.currentPosition, currentPosition != position,
+        // The motor can't stop instantly so presets are only ever reached approximately;
+        // skip tiny moves that would just overshoot back and forth.
+        guard let currentPosition = self.currentPosition,
+              abs(currentPosition - position) > DeskServices.positionTolerance,
               self.characteristicControl != nil else { return }
 
         // Stop in case we're moving

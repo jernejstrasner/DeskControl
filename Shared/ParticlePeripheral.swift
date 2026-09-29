@@ -12,6 +12,7 @@ public struct DeskServices {
     // Empirically determined values matching the Linak protocol
     static public let baseHeight = 6000 // 1/10th mm (620mm lowest desk position)
     static public let maxRange = 6500 // 1/10th mm (650mm travel range)
+    static public let positionTolerance = 20 // 1/10th mm (2mm)
     
     static public let valueMoveUp = pack("<H", [71, 0])
     static public let valueMoveDown = pack("<H", [70, 0])

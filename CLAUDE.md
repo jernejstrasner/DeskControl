@@ -44,7 +44,14 @@ Only external dependency is **Sentry** (sentry-cocoa via SPM) for crash/error re
 
 To produce a notarized `.dmg` for GitHub distribution:
 
+**Bump the version first.** Before every release, set `MARKETING_VERSION` to the release tag without the `v` (e.g. `v1.0.9` → `1.0.9`) and increment `CURRENT_PROJECT_VERSION` by one. Both settings appear in all four build configurations (macOS + iOS, Debug + Release) in `DeskControl.xcodeproj/project.pbxproj`. Commit and push the bump before archiving. Sentry identifies releases as `com.strsnr.DeskControl@<version>+<build>`, so without a bump it can't tell builds apart and `Fixes <ISSUE>` commits can't be tied to a release.
+
 ```bash
+# 0. Bump version (example for v1.0.10 / build 10) and verify
+sed -i '' -e 's/MARKETING_VERSION = .*;/MARKETING_VERSION = 1.0.10;/' \
+  -e 's/CURRENT_PROJECT_VERSION = .*;/CURRENT_PROJECT_VERSION = 10;/' DeskControl.xcodeproj/project.pbxproj
+xcodebuild -scheme DeskControl -showBuildSettings | grep -E " (MARKETING_VERSION|CURRENT_PROJECT_VERSION) "
+
 # 1. Archive with Developer ID signing
 xcodebuild archive -scheme "DeskControl" -archivePath /tmp/DeskControl.xcarchive \
   CODE_SIGN_IDENTITY="Developer ID Application: Jernej Strasner (286DN3SPR7)" \
@@ -81,6 +88,8 @@ xcrun stapler staple /tmp/DeskControl.dmg
 # 7. Upload to GitHub release
 gh release upload <tag> /tmp/DeskControl.dmg --clobber
 ```
+
+`spctl` rejects the `.dmg` itself with "no usable signature". That's expected because the DMG container isn't code-signed. To check the build, mount it and run `spctl -a -vv` on `DeskControl.app` inside, which should report "Notarized Developer ID".
 
 ### Notarization credentials
 

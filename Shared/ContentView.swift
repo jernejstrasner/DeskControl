@@ -24,6 +24,9 @@ struct ContentView: View {
 
     @State private var selectedDesk: Desk?
     #if os(macOS)
+    // Cached because SMAppService.status is a synchronous XPC call and body
+    // re-evaluates on every desk position update, which stalled the main thread.
+    @State private var loginItemStatus: SMAppService.Status = SMAppService.mainApp.status
     @State private var launchAtLogin: Bool = SMAppService.mainApp.status == .enabled
     #endif
     @AppStorage("sit-position") private var sitPosition: Int?
@@ -192,8 +195,8 @@ struct ContentView: View {
                 #if os(macOS)
                 Divider()
                 Toggle("Launch on login", isOn: $launchAtLogin)
-                    .disabled(SMAppService.mainApp.status == .requiresApproval)
-                if SMAppService.mainApp.status == .requiresApproval {
+                    .disabled(loginItemStatus == .requiresApproval)
+                if loginItemStatus == .requiresApproval {
                     Text("Please go to System Preferences and allow running as a login item")
                         .font(.footnote)
                         .multilineTextAlignment(.center)
@@ -272,6 +275,11 @@ struct ContentView: View {
                 } catch {
                     logger.log(level: .error, "Failed to configure login item")
                 }
+                loginItemStatus = SMAppService.mainApp.status
+            }
+            // Pick up approval changes made in System Settings while the menu was closed
+            .onAppear {
+                loginItemStatus = SMAppService.mainApp.status
             }
             #endif
         }
